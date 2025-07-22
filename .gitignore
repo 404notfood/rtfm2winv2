@@ -1,0 +1,219 @@
+# Laravel
+/.phpunit.cache
+/bootstrap/ssr
+/bootstrap/cache
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/storage/logs/*.log
+/storage/app/public/*
+!/storage/app/public/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/testing/*
+!/storage/framework/testing/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/vendor
+.env
+.env.backup
+.env.production
+.env.local
+.env.testing
+.phpactor.json
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/auth.json
+
+# IDE et éditeurs
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+*.swp
+*.swo
+*~
+
+# Node.js et npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm
+.yarn-integrity
+.pnp
+.pnp.js
+
+# TypeScript
+*.tsbuildinfo
+.tscache/
+
+# Build et cache
+/public/build
+/public/hot
+/public/mix-manifest.json
+/public/js/ssr.js
+.cache/
+.parcel-cache/
+dist/
+build/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# OS et système
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.tmp
+*.temp
+
+# Sauvegardes et fichiers temporaires
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+*.swp
+*.swo
+*~
+.#*
+
+# Sécurité - Clés et certificats
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+*.jks
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+*.pub
+
+# Base de données
+*.sqlite
+*.sqlite3
+*.db
+*.sql
+*.dump
+database.sqlite
+
+# Uploads et médias utilisateurs (selon vos besoins)
+/public/uploads/*
+!/public/uploads/.gitignore
+/storage/app/avatars/*
+!/storage/app/avatars/.gitignore
+/storage/app/qr-codes/*
+!/storage/app/qr-codes/.gitignore
+
+# Configuration serveur et déploiement
+.htaccess.backup
+nginx.conf.backup
+apache.conf.backup
+deploy.log
+deployment/
+.deployment
+.docker/
+
+# Tests et coverage
+/coverage/
+/.nyc_output
+/phpunit.xml
+/phpunit.local.xml
+.phpunit.result.cache
+.coverage/
+coverage.xml
+clover.xml
+
+# Monitoring et logs de production
+/storage/logs/laravel.log
+/storage/logs/*.log
+error.log
+access.log
+debug.log
+
+# Packages et dépendances spécifiques
+composer.phar
+composer.lock.bak
+package-lock.json.bak
+yarn.lock.bak
+
+# Configuration locale
+.env.local
+.env.*.local
+local.env
+config.local.json
+
+# Fichiers de documentation et spécifications (selon vos préférences)
+CLAUDE.md
+PROJECT_REBUILD.md
+PROJECT_REBUILD_PROMPT.md
+RAPPORT_VERIFICATION.md
+RAPPORT_VERIFICATION_PROJET.md
+RTFM2WIN_FINAL_SPECS.md
+todo_claude.md
+rtfm2win.sql
+rtfm2win2.sql
+
+# Spécifique RTFM2WIN
+/storage/app/quiz-exports/*
+!/storage/app/quiz-exports/.gitignore
+/storage/app/certificates/*
+!/storage/app/certificates/.gitignore
+/public/qr-codes/*
+!/public/qr-codes/.gitignore
+
+# WebSockets et temps réel
+laravel-echo-server.json
+laravel-echo-server.lock
+
+# Cache Redis (si utilisé)
+dump.rdb
+
+# Fichiers de configuration sensibles
+/config/broadcasting.local.php
+/config/database.local.php
+/config/mail.local.php
+/config/services.local.php
+
+# Divers
+*.pid
+*.seed
+*.pid.lock
+.grunt
+.lock-wscript
+.nyc_output
+lib-cov
+coverage
+.cache
+.next
+out
+.nuxt
+.vuepress/dist
+.serverless
+.fusebox/
+.dynamodb/
+.tern-port

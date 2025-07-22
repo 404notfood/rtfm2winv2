@@ -1,0 +1,47 @@
+[mysqld]
+# Configuration MySQL optimisée pour production RTFM2WIN
+
+# Connexions
+max_connections = 200
+max_connect_errors = 100000
+max_user_connections = 190
+
+# Mémoire et cache
+innodb_buffer_pool_size = 512M
+innodb_buffer_pool_instances = 2
+query_cache_type = 1
+query_cache_size = 32M
+query_cache_limit = 2M
+
+# InnoDB
+innodb_file_per_table = 1
+innodb_flush_log_at_trx_commit = 2
+innodb_log_file_size = 64M
+innodb_log_buffer_size = 16M
+innodb_flush_method = O_DIRECT
+
+# Performance
+tmp_table_size = 32M
+max_heap_table_size = 32M
+join_buffer_size = 256K
+sort_buffer_size = 2M
+read_buffer_size = 128K
+read_rnd_buffer_size = 256K
+
+# Logs
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/slow.log
+long_query_time = 1
+log_queries_not_using_indexes = 1
+
+# Sécurité
+local_infile = 0
+skip_name_resolve = 1
+
+# Charset
+character_set_server = utf8mb4
+collation_server = utf8mb4_unicode_ci
+
+# Timeout
+wait_timeout = 300
+interactive_timeout = 300 

@@ -1,0 +1,251 @@
+version: '3.8'
+
+services:
+  # Application RTFM2WIN Production
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: rtfm2win-app-prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - storage_data:/var/www/html/storage
+      - ./docker/nginx/ssl:/etc/nginx/ssl
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - DB_HOST=mysql
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+    env_file:
+      - .env.production
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - rtfm2win-prod-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.rtfm2win.rule=Host(`${APP_DOMAIN}`)"
+      - "traefik.http.routers.rtfm2win.tls.certresolver=letsencrypt"
+
+  # Base de données MySQL Production
+  mysql:
+    image: mysql:8.0
+    container_name: rtfm2win-mysql-prod
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql_prod_data:/var/lib/mysql
+      - ./docker/mysql/prod.cnf:/etc/mysql/conf.d/prod.cnf
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - rtfm2win-prod-network
+
+  # Redis Production avec authentification
+  redis:
+    image: redis:7-alpine
+    container_name: rtfm2win-redis-prod
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD} --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_prod_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+      timeout: 3s
+      retries: 5
+    networks:
+      - rtfm2win-prod-network
+
+  # WebSockets Server Production
+  websockets:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: rtfm2win-websockets-prod
+    restart: unless-stopped
+    ports:
+      - "6001:6001"
+    environment:
+      - APP_ENV=production
+      - DB_HOST=mysql
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    env_file:
+      - .env.production
+    command: ["php", "artisan", "websockets:serve", "--host=0.0.0.0", "--port=6001"]
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - rtfm2win-prod-network
+
+  # Queue Worker Production avec auto-restart
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: rtfm2win-queue-prod
+    restart: unless-stopped
+    environment:
+      - APP_ENV=production
+      - DB_HOST=mysql
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - QUEUE_CONNECTION=redis
+    env_file:
+      - .env.production
+    command: ["php", "artisan", "queue:work", "--verbose", "--tries=3", "--timeout=90", "--memory=512"]
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - rtfm2win-prod-network
+    deploy:
+      replicas: 2
+
+  # Scheduler Production
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: rtfm2win-scheduler-prod
+    restart: unless-stopped
+    environment:
+      - APP_ENV=production
+      - DB_HOST=mysql
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    env_file:
+      - .env.production
+    command: ["sh", "-c", "while true; do php artisan schedule:run; sleep 60; done"]
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - rtfm2win-prod-network
+
+  # Reverse Proxy avec SSL
+  traefik:
+    image: traefik:v2.10
+    container_name: rtfm2win-traefik
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Dashboard Traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./docker/traefik/traefik.yml:/etc/traefik/traefik.yml
+      - ./docker/traefik/dynamic.yml:/etc/traefik/dynamic.yml
+      - traefik_letsencrypt:/letsencrypt
+    environment:
+      - CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}
+      - CLOUDFLARE_API_KEY=${CLOUDFLARE_API_KEY}
+    networks:
+      - rtfm2win-prod-network
+
+  # Monitoring avec Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: rtfm2win-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - rtfm2win-prod-network
+
+  # Grafana pour les dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: rtfm2win-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./docker/grafana/provisioning:/etc/grafana/provisioning
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - rtfm2win-prod-network
+
+  # Backup automatique base de données
+  mysql-backup:
+    image: databack/mysql-backup:latest
+    container_name: rtfm2win-backup
+    restart: unless-stopped
+    volumes:
+      - ./backups:/db
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=root
+      - DB_PASS=${DB_ROOT_PASSWORD}
+      - DB_NAMES=${DB_DATABASE}
+      - CRON_TIME=0 3 * * *  # Backup quotidien à 3h
+      - COMPRESSION=gzip
+    depends_on:
+      - mysql
+    networks:
+      - rtfm2win-prod-network
+
+volumes:
+  mysql_prod_data:
+    driver: local
+  redis_prod_data:
+    driver: local
+  storage_data:
+    driver: local
+  traefik_letsencrypt:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  rtfm2win-prod-network:
+    driver: bridge 

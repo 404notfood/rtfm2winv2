@@ -1,0 +1,453 @@
+.authContainer {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+ /* background: var(--background, #fff);*/
+  overflow: hidden;
+  color: var(--foreground);
+}
+
+.authBg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: linear-gradient(135deg, 
+    rgba(var(--primary-rgb), 0.05), 
+    rgba(var(--background-rgb), 0.9),
+    rgba(var(--secondary-rgb, 124, 58, 237), 0.05)
+  );
+}
+
+.authBgPattern {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(rgba(var(--primary-rgb), 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  z-index: 1;
+}
+
+.authBgGradient {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at top right, rgba(var(--primary-rgb), 0.2), transparent 50%), 
+              radial-gradient(circle at bottom left, rgba(var(--secondary-rgb, 124, 58, 237), 0.2), transparent 50%);
+  z-index: 0;
+  opacity: 0.5;
+}
+
+.authContentWrapper {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.authContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.authCard {
+  background: rgba(var(--card-rgb, 255, 255, 255), 0.25);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  width: 100%;
+  padding: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  /* Retrait de la bordure puisque le ShineBorder s'en occupe */
+  border: none;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Style spécifique pour les thèmes sombres */
+[data-theme="dark"] .authCard,
+[data-theme="neon"] .authCard {
+  background: rgba(var(--card-rgb, 30, 30, 40), 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* Suppression de la bordure supérieure colorée, car elle sera remplacée par ShineBorder */
+.authCard::before {
+  display: none;
+}
+
+/* Assurez-vous que les éléments du formulaire sont toujours visibles au-dessus */
+.formGroup, .formInput, .formButton, .formError, .formHelp, .authTitle, .authSubtitle {
+  position: relative;
+  z-index: 10;
+}
+
+.authCardShine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: translateX(-100%);
+  animation: shine 6s infinite;
+  pointer-events: none;
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-100%);
+  }
+  20% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.authTitle {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-foreground, #000);
+  margin-bottom: 0.5rem;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.authSubtitle {
+  font-size: 1rem;
+  color: var(--color-muted-foreground, #666);
+  margin-bottom: 2rem;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}.authLogo {  display: flex;  align-items: center;  justify-content: center;  margin-bottom: 2rem;  position: relative;  z-index: 2;}
+
+.authLogoImg {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  margin-right: 0.75rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.authLogoText {
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--color-primary, #ff7800), var(--color-secondary, #7c3aed));
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.formGroup {
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.formLabel {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-foreground, #000);
+}
+
+.formInput {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: var(--color-input);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-foreground);
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+/* Styles spécifiques pour les thèmes sombres */
+[data-theme="dark"] .formInput,
+[data-theme="neon"] .formInput {
+  background: var(--color-input);
+  border-color: var(--color-border);
+  color: var(--color-foreground);
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(var(--color-primary) / 0.2);
+}
+
+.formInput::placeholder {
+  color: var(--color-muted-foreground);
+  opacity: 0.7;
+}
+
+.formButton {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(var(--color-primary) / 0.2);
+  position: relative;
+  z-index: 2;
+}
+
+.formButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(var(--color-primary) / 0.3);
+}
+
+.formButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.formError {
+  background: rgba(220, 38, 38, 0.1);
+  color: #dc2626;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  font-size: 0.9rem;
+}
+
+/* Styles pour les thèmes sombres */
+[data-theme="dark"] .formError,
+[data-theme="neon"] .formError {
+  background: rgba(220, 38, 38, 0.2);
+  color: #fca5a5;
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.formHelp {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.formHelpLink {
+  font-size: 0.875rem;
+  color: var(--primary, #ff7800);
+  transition: color 0.2s ease;
+}
+
+.formHelpLink:hover {
+  color: var(--primary-dark, #ff7800);
+  text-decoration: underline;
+}
+
+.authSwitchWrapper {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: var(--muted-foreground, #666);
+  font-size: 0.9rem;
+}
+
+.authSwitchLink {
+  color: var(--primary, #ff7800);
+  font-weight: 500;
+  transition: color 0.2s ease;
+  margin-left: 0.25rem;
+}
+
+.authSwitchLink:hover {
+  color: var(--primary-dark, #ff7800);
+  text-decoration: underline;
+}
+
+.authBackLink {
+  display: inline-block;
+  margin-top: 1rem;
+  color: var(--muted-foreground, #666);
+  font-size: 0.875rem;
+  transition: color 0.2s ease;
+}
+
+.authBackLink:hover {
+  color: var(--foreground, #000);
+}
+
+.authDivider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+}
+
+.authDivider::before,
+.authDivider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border, rgba(0, 0, 0, 0.1));
+}
+
+.authDividerText {
+  margin: 0 1rem;
+  color: var(--muted-foreground, #666);
+  font-size: 0.875rem;
+}
+
+.authSocialButtons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.authSocialButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  background: rgba(var(--background-rgb), 0.8);
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.1));
+  border-radius: 8px;
+  color: var(--foreground, #000);
+  transition: all 0.2s ease;
+}
+
+.authSocialButton:hover {  background: rgba(var(--background-rgb), 0.9);  transform: translateY(-2px);  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);}/* Animation pour le ShineBorder */@keyframes animateShine {  from {    background-position: 0% 0%;  }  to {    background-position: 100% 100%;  }}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .authCard {
+    padding: 2rem;
+    max-width: 400px;
+  }
+  
+  .authTitle {
+    font-size: 1.75rem;
+  }
+  
+  .authSubtitle {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .authContent {
+    padding: 1.5rem;
+  }
+  
+  .authCard {
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+  
+  .authLogo {
+    margin-bottom: 1.5rem;
+  }
+  
+  .authLogoImg {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .authLogoText {
+    font-size: 1.5rem;
+  }
+  
+  .formGroup {
+    margin-bottom: 1.25rem;
+  }
+  
+  .formInput {
+    padding: 0.75rem 0.875rem;
+  }
+  
+  .formButton {
+    padding: 0.75rem 0.875rem;
+  }
+}
+
+/* Styles spécifiques pour les thèmes */
+:global(.theme-dark) .authContainer,
+:global(.theme-neon) .authContainer {
+  background: var(--background, #121212);
+  color: var(--foreground, #ffffff);
+}
+
+:global(.theme-light) .authContainer {
+  background: var(--background, #ffffff);
+  color: var(--foreground, #000000);
+}
+
+:global(.theme-elegant) .authContainer {
+  background: var(--background, #f8f9fa);
+  color: var(--foreground, #1a1a2e);
+}
+
+:global(.theme-pastel) .authContainer {
+  background: var(--background, #f0f4f8);
+  color: var(--foreground, #5a5a5a);
+}
+
+:global(.theme-fun) .authContainer {
+  background: var(--background, #f5f0ff);
+  color: var(--foreground, #4a2b8c);
+}
+
+/* Améliorations pour le thème néon */
+:global(.theme-neon) .authContainer {
+  background: linear-gradient(135deg, #0d0221 0%, #150a40 50%, #0a0118 100%);
+  color: #fff;
+}
+
+:global(.theme-neon) .authBg {
+  background: radial-gradient(circle at top right, rgba(255, 0, 255, 0.15), transparent 50%), 
+              radial-gradient(circle at bottom left, rgba(0, 255, 255, 0.15), transparent 50%);
+}
+
+:global(.theme-neon) .authBgPattern {
+  background-image: radial-gradient(rgba(255, 0, 255, 0.2) 1px, transparent 1px);
+  background-size: 25px 25px;
+}
+
+:global(.theme-dark) .authBg {
+  background: radial-gradient(circle at top right, rgba(100, 100, 200, 0.08), transparent 70%), 
+              radial-gradient(circle at bottom left, rgba(50, 50, 100, 0.08), transparent 70%);
+} 
