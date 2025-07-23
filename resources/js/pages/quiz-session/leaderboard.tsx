@@ -42,12 +42,13 @@ interface Stats {
 }
 
 interface Props {
+    auth: { user: { role: string } };
     session: QuizSession;
     leaderboard: Participant[];
     stats: Stats;
 }
 
-export default function QuizLeaderboard({ session, leaderboard, stats }: Props) {
+export default function QuizLeaderboard({ auth, session, leaderboard, stats }: Props) {
     const [filter, setFilter] = useState<'all' | 'top10'>('all');
     const [sortBy, setSortBy] = useState<'score' | 'accuracy' | 'speed'>('score');
 
@@ -135,9 +136,9 @@ export default function QuizLeaderboard({ session, leaderboard, stats }: Props) 
                 <div className="space-y-4 text-center">
                     <div className="flex items-center justify-center gap-4">
                         <Button variant="ghost" size="sm" asChild>
-                            <Link href={currentUser?.is_presenter ? `/quiz/${session.quiz.id}` : '/dashboard'}>
+                            <Link href={auth?.user?.role === 'presenter' ? `/quiz/${session.quiz.id}` : '/dashboard'}>
                                 <ArrowLeft className="mr-2 h-4 w-4" />
-                                {currentUser?.is_presenter ? 'Retour au quiz' : 'Retour au dashboard'}
+                                {auth?.user?.role === 'presenter' ? 'Retour au quiz' : 'Retour au dashboard'}
                             </Link>
                         </Button>
                     </div>
@@ -345,7 +346,7 @@ export default function QuizLeaderboard({ session, leaderboard, stats }: Props) 
                         </Link>
                     </Button>
 
-                    {currentUser?.is_presenter && (
+                    {auth?.user?.role === 'presenter' && (
                         <Button asChild>
                             <Link href={`/quiz/${session.quiz.id}/sessions`}>
                                 <RefreshCw className="mr-2 h-4 w-4" />

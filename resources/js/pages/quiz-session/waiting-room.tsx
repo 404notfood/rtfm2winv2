@@ -293,7 +293,7 @@ export default function WaitingRoom({ session, participants: initialParticipants
                         </Card>
 
                         {/* Chat */}
-                        <ChatBox sessionId={session.id} currentParticipant={currentParticipant} />
+                        <ChatBox sessionId={session.id} currentParticipant={currentParticipant as Participant} />
 
                         {/* Presenter Controls */}
                         {isPresenter && (

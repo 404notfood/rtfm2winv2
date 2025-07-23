@@ -301,7 +301,7 @@ export default function AdminReports({ reports, templates, stats }: Props) {
                                                 <Checkbox
                                                     id="auto_send"
                                                     checked={data.auto_send}
-                                                    onCheckedChange={(checked) => setData('auto_send', !!checked)}
+                                                    onCheckedChange={(checked) => setData('auto_send', checked as boolean)}
                                                 />
                                                 <Label htmlFor="auto_send" className="text-sm">
                                                     Envoyer automatiquement par email

@@ -7,7 +7,9 @@
       "Bash(cp:*)",
       "Bash(mv:*)",
       "Bash(rm:*)",
-      "Bash(composer:*)"
+      "Bash(composer:*)",
+      "Bash(rg:*)",
+      "Bash(npm run types:*)"
     ],
     "deny": []
   }

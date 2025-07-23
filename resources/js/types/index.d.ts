@@ -222,5 +222,9 @@ export interface FormOptions {
     theme_id?: number;
     question_id?: number;
     role?: string;
+    action?: string;
+    avatar?: string;
+    data?: Record<string, unknown>;
+    participant_id?: number;
     [key: string]: unknown; // Allow additional properties
 }
