@@ -176,6 +176,9 @@ const toastHelpers = {
   info: (props: Omit<Toast, 'variant'>) => toast({ ...props, variant: 'info' }),
 }
 
+// Extend the main toast function with helpers
+Object.assign(toast, toastHelpers);
+
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
 
@@ -191,7 +194,7 @@ function useToast() {
 
   return {
     ...state,
-    toast: Object.assign(toast, toastHelpers),
+    toast: toast as typeof toast & typeof toastHelpers,
     dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
   }
 }

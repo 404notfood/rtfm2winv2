@@ -29,6 +29,12 @@ export interface SharedData {
     auth: Auth;
     ziggy: Config & { location: string };
     sidebarOpen: boolean;
+    flash?: {
+        success?: string;
+        error?: string;
+        warning?: string;
+        info?: string;
+    };
     [key: string]: unknown;
 }
 
@@ -40,19 +46,39 @@ export interface User {
     email_verified_at: string | null;
     created_at: string;
     updated_at: string;
-    role?: string;
-    [key: string]: unknown; // This allows for additional properties...
+    role: 'admin' | 'presenter' | 'user' | 'guest';
+    can_be_presenter?: boolean;
+    is_suspended?: boolean;
+    current_theme_id?: number;
+    preferences?: Record<string, unknown>;
+    last_login_at?: string;
+    avatar_url?: string;
 }
 
 export interface Quiz {
     id: number;
     title: string;
+    code: string;
     description?: string;
-    is_active?: boolean;
-    is_public?: boolean;
+    creator_id?: number;
+    category?: string;
+    time_per_question: number;
+    multiple_answers: boolean;
+    status: 'draft' | 'published' | 'archived';
+    join_code?: string;
+    unique_link?: string;
+    qr_code_path?: string;
+    allow_anonymous?: boolean;
     created_at: string;
     updated_at: string;
-    [key: string]: unknown;
+    creator?: User;
+    questions?: Question[];
+    questions_count?: number;
+    sessions_count?: number;
+    participants_count?: number;
+    tags?: Tag[];
+    join_url?: string;
+    qr_code_url?: string;
 }
 
 export interface Answer {
@@ -60,18 +86,25 @@ export interface Answer {
     text: string;
     is_correct: boolean;
     explanation?: string;
-    [key: string]: unknown;
+    question_id?: number;
+    order_index?: number;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface Question {
     id: number;
     text: string;
     type: 'single' | 'multiple';
+    quiz_id: number;
     time_limit?: number;
-    points?: number;
+    points: number;
+    order_index: number;
     explanation?: string;
-    answers?: Answer[];
-    [key: string]: unknown;
+    image_path?: string;
+    answers: Answer[];
+    created_at: string;
+    updated_at: string;
 }
 
 export interface Theme {
@@ -89,12 +122,17 @@ export interface Theme {
 
 export interface Participant {
     id: number;
-    name: string;
+    quiz_session_id: number;
+    user_id?: number;
+    nickname: string;
+    pseudo: string;
     avatar?: string;
-    score?: number;
+    is_anonymous: boolean;
+    score: number;
     position?: number;
+    is_eliminated?: boolean;
     joined_at: string;
-    [key: string]: unknown;
+    last_activity_at?: string;
 }
 
 export interface Match {
@@ -116,5 +154,73 @@ export interface Tournament {
     prize_pool?: number;
     start_date?: string;
     end_date?: string;
-    [key: string]: unknown;
+    status: 'draft' | 'active' | 'completed' | 'cancelled';
+    current_round?: number;
+    total_rounds?: number;
+    created_at: string;
+    updated_at: string;
+    creator?: User;
+    participants?: Participant[];
+    matches?: Match[];
+}
+
+export interface Tag {
+    id: number;
+    name: string;
+    slug: string;
+    description?: string;
+    color?: string;
+    is_featured?: boolean;
+    usage_count?: number;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface QuizSession {
+    id: number;
+    quiz_id: number;
+    presenter_id?: number;
+    code: string;
+    status: 'waiting' | 'active' | 'completed' | 'cancelled';
+    current_question_index?: number;
+    started_at?: string;
+    ended_at?: string;
+    settings?: Record<string, unknown>;
+    quiz?: Quiz;
+    presenter?: User;
+    participants?: Participant[];
+    participants_count?: number;
+}
+
+export interface CurrentParticipant {
+    id: number;
+    nickname: string;
+    pseudo: string; // Required to match Participant interface
+    score: number;
+    is_eliminated?: boolean;
+}
+
+export interface FormOptions {
+    method?: 'get' | 'post' | 'put' | 'patch' | 'delete';
+    data?: Record<string, unknown>;
+    preserveScroll?: boolean;
+    preserveState?: boolean;
+    replace?: boolean;
+    only?: string[];
+    except?: string[];
+    onStart?: () => void;
+    onProgress?: (progress: { percentage: number }) => void;
+    onFinish?: () => void;
+    onError?: (errors: Record<string, string>) => void;
+    onSuccess?: () => void;
+    onCancel?: () => void;
+    // Additional Inertia properties commonly used
+    _method?: 'get' | 'post' | 'put' | 'patch' | 'delete';
+    search?: string;
+    tags?: string[];
+    max_participants?: number;
+    theme_id?: number;
+    question_id?: number;
+    role?: string;
+    [key: string]: unknown; // Allow additional properties
 }

@@ -227,7 +227,7 @@ export default function TagEdit({
                                     <Label>Tag en vedette</Label>
                                     <p className="text-sm text-muted-foreground">Les tags en vedette apparaissent en priorité dans les suggestions</p>
                                 </div>
-                                <Switch checked={data.is_featured} onCheckedChange={(checked) => setData('is_featured', checked as boolean)} />
+                                <Switch checked={data.is_featured} onCheckedChange={(checked) => setData('is_featured', !!checked)} />
                             </div>
 
                             {/* Active */}
@@ -236,7 +236,7 @@ export default function TagEdit({
                                     <Label>Tag actif</Label>
                                     <p className="text-sm text-muted-foreground">Seuls les tags actifs peuvent être utilisés dans les quiz</p>
                                 </div>
-                                <Switch checked={data.is_active} onCheckedChange={(checked) => setData('is_active', checked as boolean)} />
+                                <Switch checked={data.is_active} onCheckedChange={(checked) => setData('is_active', !!checked)} />
                             </div>
                         </CardContent>
                     </Card>

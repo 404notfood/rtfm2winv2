@@ -103,6 +103,23 @@ class Quiz extends Model
     }
 
     /**
+     * Get the participants across all sessions.
+     */
+    public function participants(): HasMany
+    {
+        return $this->hasManyThrough(Participant::class, QuizSession::class);
+    }
+
+    /**
+     * Get achievements related to this quiz.
+     */
+    public function achievements(): BelongsToMany
+    {
+        return $this->belongsToMany(Achievement::class, 'quiz_achievements')
+            ->withTimestamps();
+    }
+
+    /**
      * Get the scoring configuration for this quiz.
      */
     public function scoringConfiguration()

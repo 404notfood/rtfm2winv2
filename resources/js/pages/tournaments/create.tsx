@@ -277,7 +277,7 @@ export default function TournamentCreate({ quizzes }: Props) {
                                         <Switch
                                             id="is_public"
                                             checked={data.is_public}
-                                            onCheckedChange={(checked) => setData('is_public', checked as boolean)}
+                                            onCheckedChange={(checked) => setData('is_public', !!checked)}
                                         />
                                     </div>
 
@@ -289,7 +289,7 @@ export default function TournamentCreate({ quizzes }: Props) {
                                         <Switch
                                             id="auto_start"
                                             checked={data.auto_start}
-                                            onCheckedChange={(checked) => setData('auto_start', checked as boolean)}
+                                            onCheckedChange={(checked) => setData('auto_start', !!checked)}
                                         />
                                     </div>
 
@@ -301,7 +301,7 @@ export default function TournamentCreate({ quizzes }: Props) {
                                         <Switch
                                             id="randomize_bracket"
                                             checked={data.randomize_bracket}
-                                            onCheckedChange={(checked) => setData('randomize_bracket', checked as boolean)}
+                                            onCheckedChange={(checked) => setData('randomize_bracket', !!checked)}
                                         />
                                     </div>
 
@@ -313,7 +313,7 @@ export default function TournamentCreate({ quizzes }: Props) {
                                         <Switch
                                             id="allow_late_registration"
                                             checked={data.allow_late_registration}
-                                            onCheckedChange={(checked) => setData('allow_late_registration', checked as boolean)}
+                                            onCheckedChange={(checked) => setData('allow_late_registration', !!checked)}
                                         />
                                     </div>
                                 </div>

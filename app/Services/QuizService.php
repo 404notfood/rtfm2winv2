@@ -7,6 +7,7 @@ use App\Models\QuizSession;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 /**
@@ -109,7 +110,7 @@ class QuizService
                     'type' => $questionData['type'],
                     'time_limit' => $questionData['time_limit'] ?? $data['time_per_question'],
                     'points' => $questionData['points'] ?? 100,
-                    'order' => $questionData['order'] ?? 1,
+                    'order_index' => $questionData['order'] ?? 1,
                 ]);
 
                 // Create answers
@@ -280,7 +281,7 @@ class QuizService
                 'type' => $question->type,
                 'points' => $question->points,
                 'time_limit' => $question->time_limit,
-                'order' => $question->order,
+                'order_index' => $question->order_index,
             ]);
             
             // Dupliquer les réponses

@@ -242,7 +242,7 @@ export default function QuestionEdit({ quiz, question }: Props) {
                                         <div className="flex items-center space-x-2 pt-2">
                                             <Checkbox
                                                 checked={answer.is_correct}
-                                                onCheckedChange={(checked) => updateAnswer(answer.id, 'is_correct', checked as boolean)}
+                                                onCheckedChange={(checked) => updateAnswer(answer.id, 'is_correct', !!checked)}
                                             />
                                             <Label className="text-sm font-medium">
                                                 Réponse {index + 1}

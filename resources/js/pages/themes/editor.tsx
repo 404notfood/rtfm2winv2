@@ -413,7 +413,7 @@ export default function ThemeEditor({ theme, editing = false, base_themes = [] }
 
                             <div className="flex items-center justify-between">
                                 <Label htmlFor="is-dark">Mode sombre</Label>
-                                <Switch id="is-dark" checked={data.is_dark} onCheckedChange={(checked) => setData('is_dark', checked as boolean)} />
+                                <Switch id="is-dark" checked={data.is_dark} onCheckedChange={(checked) => setData('is_dark', !!checked)} />
                             </div>
                         </div>
                     </div>
@@ -547,7 +547,7 @@ export default function ThemeEditor({ theme, editing = false, base_themes = [] }
                                             <Label className="text-xs">Thème public</Label>
                                             <Switch
                                                 checked={data.is_public}
-                                                onCheckedChange={(checked) => setData('is_public', checked as boolean)}
+                                                onCheckedChange={(checked) => setData('is_public', !!checked)}
                                             />
                                         </div>
                                     </CardContent>

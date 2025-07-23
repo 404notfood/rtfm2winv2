@@ -12,17 +12,6 @@ import { Input } from '@/components/ui/input';
 // Icons
 import { ArrowRight, BarChart3, Brain, Gamepad2, Menu, Monitor, Play, Sparkles, Target, Users, X, Zap } from 'lucide-react';
 
-// Interface pour le type Quiz
-interface Quiz {
-    id: number;
-    title: string;
-    questions_count: number;
-    category: string;
-    description?: string;
-    difficulty?: 'Facile' | 'Moyen' | 'Difficile';
-    participants?: number;
-    rating?: number;
-}
 
 // Composant Header
 const Header = () => {

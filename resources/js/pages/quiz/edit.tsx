@@ -355,7 +355,7 @@ export default function QuizEdit({ quiz, tags }: Props) {
                                     <Checkbox
                                         id="is_active"
                                         checked={data.is_active}
-                                        onCheckedChange={(checked) => setData('is_active', checked as boolean)}
+                                        onCheckedChange={(checked) => setData('is_active', !!checked)}
                                     />
                                     <Label htmlFor="is_active">Quiz actif</Label>
                                 </div>
@@ -364,7 +364,7 @@ export default function QuizEdit({ quiz, tags }: Props) {
                                     <Checkbox
                                         id="is_public"
                                         checked={data.is_public}
-                                        onCheckedChange={(checked) => setData('is_public', checked as boolean)}
+                                        onCheckedChange={(checked) => setData('is_public', !!checked)}
                                     />
                                     <Label htmlFor="is_public">Quiz public (visible par tous)</Label>
                                 </div>
@@ -373,7 +373,7 @@ export default function QuizEdit({ quiz, tags }: Props) {
                                     <Checkbox
                                         id="show_correct_answer"
                                         checked={data.show_correct_answer}
-                                        onCheckedChange={(checked) => setData('show_correct_answer', checked as boolean)}
+                                        onCheckedChange={(checked) => setData('show_correct_answer', !!checked)}
                                     />
                                     <Label htmlFor="show_correct_answer">Afficher les bonnes réponses</Label>
                                 </div>
@@ -382,7 +382,7 @@ export default function QuizEdit({ quiz, tags }: Props) {
                                     <Checkbox
                                         id="randomize_questions"
                                         checked={data.randomize_questions}
-                                        onCheckedChange={(checked) => setData('randomize_questions', checked as boolean)}
+                                        onCheckedChange={(checked) => setData('randomize_questions', !!checked)}
                                     />
                                     <Label htmlFor="randomize_questions">Mélanger les questions</Label>
                                 </div>
@@ -391,7 +391,7 @@ export default function QuizEdit({ quiz, tags }: Props) {
                                     <Checkbox
                                         id="randomize_answers"
                                         checked={data.randomize_answers}
-                                        onCheckedChange={(checked) => setData('randomize_answers', checked as boolean)}
+                                        onCheckedChange={(checked) => setData('randomize_answers', !!checked)}
                                     />
                                     <Label htmlFor="randomize_answers">Mélanger les réponses</Label>
                                 </div>
@@ -400,7 +400,7 @@ export default function QuizEdit({ quiz, tags }: Props) {
                                     <Checkbox
                                         id="allow_multiple_attempts"
                                         checked={data.allow_multiple_attempts}
-                                        onCheckedChange={(checked) => setData('allow_multiple_attempts', checked as boolean)}
+                                        onCheckedChange={(checked) => setData('allow_multiple_attempts', !!checked)}
                                     />
                                     <Label htmlFor="allow_multiple_attempts">Autoriser plusieurs tentatives</Label>
                                 </div>

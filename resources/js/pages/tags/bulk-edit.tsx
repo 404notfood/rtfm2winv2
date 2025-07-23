@@ -283,7 +283,7 @@ export default function TagsBulkEdit({ tags = [], filters = {} }: Props) {
                                     >
                                         <Checkbox
                                             checked={selectedTags.includes(tag.id)}
-                                            onCheckedChange={(checked) => handleSelectTag(tag.id, checked as boolean)}
+                                            onCheckedChange={(checked) => handleSelectTag(tag.id, !!checked)}
                                         />
 
                                         <div className="h-4 w-4 flex-shrink-0 rounded-full" style={{ backgroundColor: getTagColor(tag) }} />

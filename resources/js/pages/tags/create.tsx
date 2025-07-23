@@ -47,7 +47,7 @@ export default function TagCreate({
         post('/tags');
     };
 
-    const useSuggestedName = (name: string) => {
+    const applySuggestedName = (name: string) => {
         handleNameChange(name);
     };
 
@@ -108,7 +108,7 @@ export default function TagCreate({
                                     <Label>Suggestions populaires</Label>
                                     <div className="flex flex-wrap gap-2">
                                         {suggested_names.map((name) => (
-                                            <Button key={name} type="button" variant="outline" size="sm" onClick={() => useSuggestedName(name)}>
+                                            <Button key={name} type="button" variant="outline" size="sm" onClick={() => applySuggestedName(name)}>
                                                 {name}
                                             </Button>
                                         ))}
@@ -212,7 +212,7 @@ export default function TagCreate({
                                     <Label>Tag en vedette</Label>
                                     <p className="text-sm text-muted-foreground">Les tags en vedette apparaissent en priorité dans les suggestions</p>
                                 </div>
-                                <Switch checked={data.is_featured} onCheckedChange={(checked) => setData('is_featured', checked as boolean)} />
+                                <Switch checked={data.is_featured} onCheckedChange={(checked) => setData('is_featured', !!checked)} />
                             </div>
 
                             {/* Active */}
@@ -221,7 +221,7 @@ export default function TagCreate({
                                     <Label>Tag actif</Label>
                                     <p className="text-sm text-muted-foreground">Seuls les tags actifs peuvent être utilisés dans les quiz</p>
                                 </div>
-                                <Switch checked={data.is_active} onCheckedChange={(checked) => setData('is_active', checked as boolean)} />
+                                <Switch checked={data.is_active} onCheckedChange={(checked) => setData('is_active', !!checked)} />
                             </div>
                         </CardContent>
                     </Card>

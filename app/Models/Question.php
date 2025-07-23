@@ -14,8 +14,13 @@ class Question extends Model
     protected $fillable = [
         'quiz_id',
         'question_text',
+        'text',
+        'type',
+        'time_limit',
         'points',
         'order_index',
+        'explanation',
+        'image_path',
         'multiple_answers',
     ];
 
@@ -23,6 +28,9 @@ class Question extends Model
         'multiple_answers' => 'boolean',
         'points' => 'integer',
         'order_index' => 'integer',
+        'time_limit' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**
