@@ -359,8 +359,76 @@ class DashboardController extends Controller
         // System health check
         $systemHealth = $this->getSystemHealth();
         
+        // Format stats to match expected structure
+        $stats = [
+            'overview' => [
+                'total_users' => $globalStats['total_users'],
+                'total_quizzes' => $globalStats['total_quizzes'],
+                'total_sessions' => $globalStats['total_sessions'],
+                'total_participants' => 0, // TODO: Calculate total participants
+                'growth_rate' => [
+                    'users' => $globalStats['users_growth'],
+                    'quizzes' => $globalStats['quizzes_growth'],
+                    'sessions' => 0, // TODO: Calculate sessions growth
+                    'participants' => 0, // TODO: Calculate participants growth
+                ],
+            ],
+            'users' => [
+                'admin_count' => 1, // TODO: Calculate from roles
+                'presenter_count' => 0, // TODO: Calculate from roles
+                'user_count' => $globalStats['total_users'],
+                'guest_count' => 0, // TODO: Calculate guest sessions
+            ],
+            'quizzes' => [
+                'published_quizzes' => 0, // TODO: Calculate from quiz status
+                'draft_quizzes' => 0, // TODO: Calculate from quiz status
+                'archived_quizzes' => 0, // TODO: Calculate from quiz status
+                'avg_questions_per_quiz' => 0, // TODO: Calculate average
+                'most_popular_category' => 'General', // TODO: Calculate from data
+                'total_tags' => 0, // TODO: Calculate from tags
+            ],
+            'sessions' => [
+                'live_sessions' => $globalStats['active_sessions'],
+                'completed_sessions' => $globalStats['total_sessions'] - $globalStats['active_sessions'],
+                'battle_royale_sessions' => 0, // TODO: Calculate from battle royale sessions
+                'tournament_sessions' => 0, // TODO: Calculate from tournaments
+                'avg_participants_per_session' => 0, // TODO: Calculate average
+                'avg_duration_minutes' => 0, // TODO: Calculate average duration
+            ],
+            'system' => [
+                'database_size' => '50MB', // TODO: Calculate actual size
+                'storage_used' => '120MB', // TODO: Calculate actual usage
+                'cache_hit_rate' => 85.5, // TODO: Get from cache stats
+                'avg_response_time' => 150, // TODO: Get from monitoring
+                'uptime_percentage' => 99.8, // TODO: Get from monitoring
+                'last_backup' => now()->subHours(2)->toISOString(), // TODO: Get actual backup time
+            ],
+        ];
+
+        // Mock recent activity data
+        $recent_activity = [
+            [
+                'id' => 1,
+                'type' => 'user_registration',
+                'description' => 'Nouvel utilisateur inscrit',
+                'user' => ['id' => 1, 'name' => 'John Doe'],
+                'timestamp' => now()->subMinutes(5)->toISOString(),
+                'severity' => 'info',
+            ],
+        ];
+
+        // Mock top content data
+        $top_content = [
+            'most_popular_quizzes' => [],
+            'most_active_users' => [],
+            'top_users' => [],
+            'trending_tags' => [],
+        ];
+
         return Inertia::render('admin/dashboard', [
-            'globalStats' => $globalStats,
+            'stats' => $stats,
+            'recent_activity' => $recent_activity,
+            'top_content' => $top_content,
             'userGrowth' => $userGrowth,
             'popularQuizzes' => $popularQuizzes,
             'recentUsers' => $recentUsers,

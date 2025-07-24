@@ -53,7 +53,25 @@ class QuizController extends Controller
      */
     public function create(): Response
     {
+        // Get available tags for the quiz creation form
+        try {
+            $tags = \App\Models\Tag::where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name', 'color'])
+                ->map(function($tag) {
+                    return [
+                        'id' => $tag->id,
+                        'name' => $tag->name,
+                        'color' => $tag->color ?? '#3B82F6',
+                    ];
+                });
+        } catch (\Exception $e) {
+            // If tags table doesn't exist yet, provide empty array
+            $tags = collect([]);
+        }
+
         return Inertia::render('quiz/create', [
+            'tags' => $tags,
             'categories' => ['général', 'science', 'histoire', 'sport', 'culture'], // TODO: From database
         ]);
     }

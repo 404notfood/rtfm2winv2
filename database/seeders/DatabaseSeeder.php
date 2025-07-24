@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             ThemeSeeder::class,
             RolesTableSeeder::class,
+            LeagueSeeder::class,
+            AchievementSeeder::class,
             UsersTableSeeder::class,
             BadgesTableSeeder::class,
             TrophiesTableSeeder::class,

@@ -3,13 +3,14 @@ import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { type User } from '@/types';
 import { Link, router } from '@inertiajs/react';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut, Settings, Shield } from 'lucide-react';
 
 interface UserMenuContentProps {
     user: User;
+    isAdmin?: boolean;
 }
 
-export function UserMenuContent({ user }: UserMenuContentProps) {
+export function UserMenuContent({ user, isAdmin = false }: UserMenuContentProps) {
     const cleanup = useMobileNavigation();
 
     const handleLogout = () => {
@@ -26,10 +27,26 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
+                {(user.role === 'admin' || user.role === 'presenter') && !isAdmin && (
+                    <DropdownMenuItem asChild>
+                        <Link className="block w-full" href="/admin/dashboard" as="button" onClick={cleanup}>
+                            <Shield className="mr-2" />
+                            Administration
+                        </Link>
+                    </DropdownMenuItem>
+                )}
+                {isAdmin && (
+                    <DropdownMenuItem asChild>
+                        <Link className="block w-full" href="/dashboard" as="button" onClick={cleanup}>
+                            <Settings className="mr-2" />
+                            Interface Utilisateur
+                        </Link>
+                    </DropdownMenuItem>
+                )}
                 <DropdownMenuItem asChild>
                     <Link className="block w-full" href={route('profile.edit')} as="button" prefetch onClick={cleanup}>
                         <Settings className="mr-2" />
-                        Settings
+                        Paramètres
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>

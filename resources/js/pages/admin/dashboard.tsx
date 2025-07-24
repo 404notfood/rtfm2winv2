@@ -126,7 +126,17 @@ interface Props {
     };
 }
 
-export default function AdminDashboard({ stats, recent_activity, top_content, filters = {} }: Props) {
+export default function AdminDashboard({ 
+    stats, 
+    recent_activity = [], 
+    top_content = { 
+        most_popular_quizzes: [], 
+        most_active_users: [], 
+        top_users: [],
+        trending_tags: [] 
+    }, 
+    filters = {} 
+}: Props) {
     const [period, setPeriod] = useState(filters.period || '30d');
     const [refreshing, setRefreshing] = useState(false);
 

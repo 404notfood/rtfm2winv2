@@ -19,17 +19,16 @@ interface Tag {
 }
 
 interface Props {
-    tags: Tag[];
+    tags?: Tag[];
 }
 
-export default function QuizCreate({ tags }: Props) {
+export default function QuizCreate({ tags = [] }: Props) {
     const [selectedTags, setSelectedTags] = useState<number[]>([]);
     const [newTag, setNewTag] = useState('');
 
     const { data, setData, post, processing, errors } = useForm({
         title: '',
         description: '',
-        category: '',
         is_active: true,
         is_public: true,
         time_per_question: 30,
@@ -122,25 +121,6 @@ export default function QuizCreate({ tags }: Props) {
                                 {errors.description && <p className="mt-1 text-sm text-destructive">{errors.description}</p>}
                             </div>
 
-                            <div>
-                                <Label htmlFor="category">Catégorie</Label>
-                                <Select value={data.category} onValueChange={(value) => setData('category', value)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Sélectionnez une catégorie" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="general">Général</SelectItem>
-                                        <SelectItem value="science">Sciences</SelectItem>
-                                        <SelectItem value="history">Histoire</SelectItem>
-                                        <SelectItem value="geography">Géographie</SelectItem>
-                                        <SelectItem value="sports">Sports</SelectItem>
-                                        <SelectItem value="entertainment">Divertissement</SelectItem>
-                                        <SelectItem value="technology">Technologie</SelectItem>
-                                        <SelectItem value="art">Art et Culture</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                {errors.category && <p className="mt-1 text-sm text-destructive">{errors.category}</p>}
-                            </div>
                         </CardContent>
                     </Card>
 

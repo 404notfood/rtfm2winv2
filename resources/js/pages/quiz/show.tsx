@@ -2,8 +2,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AppLayout } from '@/layouts/app-layout';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { BarChart3, Copy, Download, Edit, Play, QrCode, Share2, Trash2, Users } from 'lucide-react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { BarChart3, Copy, Download, Edit, Play, Plus, QrCode, Share2, Trash2, Users } from 'lucide-react';
 import { useState } from 'react';
 
 interface Quiz {
@@ -218,11 +218,36 @@ export default function QuizShow({ quiz, canEdit, canCreateSession, statistics }
                         {/* Questions List */}
                         <Card>
                             <CardHeader>
-                                <CardTitle>Questions ({quiz.questions.length})</CardTitle>
+                                <div className="flex items-center justify-between">
+                                    <CardTitle>Questions ({quiz.questions.length})</CardTitle>
+                                    {canEdit && (
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm"
+                                            onClick={() => router.visit(`/quiz/${quiz.id}/questions/create`)}
+                                        >
+                                            <Plus className="mr-2 h-4 w-4" />
+                                            Ajouter une question
+                                        </Button>
+                                    )}
+                                </div>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-4">
-                                    {quiz.questions.map((question, index) => (
+                                    {quiz.questions.length === 0 ? (
+                                        <div className="py-8 text-center text-muted-foreground">
+                                            <p className="mb-4">Aucune question ajoutée pour l'instant.</p>
+                                            {canEdit && (
+                                                <Button 
+                                                    onClick={() => router.visit(`/quiz/${quiz.id}/questions/create`)}
+                                                >
+                                                    <Plus className="mr-2 h-4 w-4" />
+                                                    Ajouter votre première question
+                                                </Button>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        quiz.questions.map((question, index) => (
                                         <div key={question.id} className="rounded-lg border p-4">
                                             <div className="mb-3 flex items-start justify-between">
                                                 <h4 className="font-medium">
@@ -254,7 +279,8 @@ export default function QuizShow({ quiz, canEdit, canCreateSession, statistics }
                                                 ))}
                                             </div>
                                         </div>
-                                    ))}
+                                        ))
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>

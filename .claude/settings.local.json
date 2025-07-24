@@ -9,7 +9,10 @@
       "Bash(rm:*)",
       "Bash(composer:*)",
       "Bash(rg:*)",
-      "Bash(npm run types:*)"
+      "Bash(npm run types:*)",
+      "Bash(ls:*)",
+      "Bash(php artisan migrate:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

@@ -21,7 +21,9 @@ class UsersTableSeeder extends Seeder
             'name' => 'admin',
             'email' => 'admin@example.com',
             'password' => Hash::make('password'),
+            'role' => 'admin',
             'avatar' => 'default-admin.png',
+            'email_verified_at' => now(),
         ]);
 
         // Créer quelques utilisateurs standards
@@ -30,31 +32,41 @@ class UsersTableSeeder extends Seeder
                 'name' => 'julien',
                 'email' => 'julien@example.com',
                 'password' => Hash::make('password'),
+                'role' => 'presenter',
                 'avatar' => 'default-user-1.png',
+                'email_verified_at' => now(),
             ],
             [
                 'name' => 'sophie',
                 'email' => 'sophie@example.com',
                 'password' => Hash::make('password'),
+                'role' => 'user',
                 'avatar' => 'default-user-2.png',
+                'email_verified_at' => now(),
             ],
             [
                 'name' => 'lucas',
                 'email' => 'lucas@example.com',
                 'password' => Hash::make('password'),
+                'role' => 'user',
                 'avatar' => 'default-user-3.png',
+                'email_verified_at' => now(),
             ],
             [
                 'name' => 'emma',
                 'email' => 'emma@example.com',
                 'password' => Hash::make('password'),
+                'role' => 'user',
                 'avatar' => 'default-user-4.png',
+                'email_verified_at' => now(),
             ],
             [
                 'name' => 'thomas',
                 'email' => 'thomas@example.com',
                 'password' => Hash::make('password'),
+                'role' => 'presenter',
                 'avatar' => 'default-user-5.png',
+                'email_verified_at' => now(),
             ],
         ];
 

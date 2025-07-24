@@ -203,6 +203,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin', 'throt
         return app(DashboardController::class)->index(request());
     })->name('dashboard');
     
+    // Admin settings and content management
+    Route::get('/settings', function () {
+        return Inertia::render('admin/settings');
+    })->name('settings');
+    
+    Route::get('/content', function () {
+        return Inertia::render('admin/content');
+    })->name('content');
+    
     // User management
     Route::prefix('users')->name('users.')->group(function () {
         Route::get('/', [AdminUserController::class, 'index'])->name('index');

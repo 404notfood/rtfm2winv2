@@ -13,11 +13,15 @@ return new class extends Migration
     {
         Schema::create('user_achievements', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('badge_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('reward_id')->nullable()->constrained()->onDelete('cascade');
-            $table->foreignId('trophy_id')->nullable()->constrained()->onDelete('cascade');
-            $table->timestamp('earned_at')->useCurrent();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('achievement_id')->constrained()->onDelete('cascade');
+            $table->timestamp('earned_at')->nullable();
+            $table->integer('progress')->default(0);
+            $table->json('metadata')->nullable();
+            $table->timestamps();
+
+            $table->unique(['user_id', 'achievement_id']);
+            $table->index(['user_id', 'earned_at']);
         });
     }
 
