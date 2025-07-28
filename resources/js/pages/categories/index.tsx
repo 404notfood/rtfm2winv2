@@ -1,31 +1,32 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AppLayout } from '@/layouts/app-layout';
+import { PublicLayout } from '@/layouts/public-layout';
 import { Head, Link } from '@inertiajs/react';
-import { BookOpen, Brain, Calendar, Dumbbell, Palette } from 'lucide-react';
+import { Code2, Database, Globe, Server, Terminal, Cpu } from 'lucide-react';
 
 interface Props {
     categories: string[];
 }
 
 const categoryIcons = {
-    'général': BookOpen,
-    'science': Brain,
-    'histoire': Calendar,
-    'sport': Dumbbell,
-    'culture': Palette,
+    'frontend': Globe,
+    'backend': Server,
+    'database': Database,
+    'devops': Terminal,
+    'mobile': Cpu,
+    'fullstack': Code2,
 };
 
 export default function CategoriesIndex({ categories }: Props) {
     return (
-        <AppLayout>
+        <PublicLayout>
             <Head title="Catégories de Quiz" />
             
             <div className="container mx-auto px-4 py-8">
                 <div className="mb-8 text-center">
-                    <h1 className="text-4xl font-bold mb-4">Catégories de Quiz</h1>
+                    <h1 className="text-4xl font-bold mb-4">Catégories de Quiz Développement</h1>
                     <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                        Explorez nos différentes catégories de quiz et trouvez ceux qui correspondent à vos intérêts.
+                        Explorez nos catégories spécialisées pour développeurs et apprentis dev. Testez vos connaissances techniques !
                     </p>
                 </div>
 
@@ -42,7 +43,12 @@ export default function CategoriesIndex({ categories }: Props) {
                                         <div>
                                             <CardTitle className="capitalize">{category}</CardTitle>
                                             <CardDescription>
-                                                Quiz de {category}
+                                                Quiz {category === 'frontend' ? 'Front-end' : 
+                                                     category === 'backend' ? 'Back-end' :
+                                                     category === 'database' ? 'Base de données' :
+                                                     category === 'devops' ? 'DevOps & Infrastructure' :
+                                                     category === 'mobile' ? 'Développement mobile' :
+                                                     category === 'fullstack' ? 'Full-Stack' : category}
                                             </CardDescription>
                                         </div>
                                     </div>
@@ -63,6 +69,6 @@ export default function CategoriesIndex({ categories }: Props) {
                     })}
                 </div>
             </div>
-        </AppLayout>
+        </PublicLayout>
     );
 }

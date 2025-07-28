@@ -45,13 +45,21 @@ class DashboardController extends Controller
      */
     private function guestDashboard(): Response
     {
-        // TODO: Load recent public quizzes, trending topics
-        $publicQuizzes = collect(); // TODO: Implement
-        $recentSessions = collect(); // TODO: Implement
+        // Load recent public quizzes
+        $recentQuizzes = collect(); // TODO: Load actual recent quizzes
+        
+        // Get basic statistics
+        $globalStats = $this->getGlobalStats();
+        
+        $stats = [
+            'total_quizzes' => $globalStats['total_quizzes'],
+            'active_sessions' => $globalStats['active_sessions'],
+            'total_participants' => 0, // TODO: Calculate total participants
+        ];
         
         return Inertia::render('dashboard/guest', [
-            'publicQuizzes' => $publicQuizzes,
-            'recentSessions' => $recentSessions,
+            'recentQuizzes' => $recentQuizzes,
+            'stats' => $stats,
             'joinUrl' => url('/join'),
         ]);
     }

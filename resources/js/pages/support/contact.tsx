@@ -3,13 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { AppLayout } from '@/layouts/app-layout';
+import { PublicLayout } from '@/layouts/public-layout';
 import { Head } from '@inertiajs/react';
 import { Mail, MapPin, Phone } from 'lucide-react';
 
 export default function Contact() {
     return (
-        <AppLayout>
+        <PublicLayout>
             <Head title="Contact" />
             
             <div className="container mx-auto px-4 py-8">
@@ -132,6 +132,6 @@ export default function Contact() {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </PublicLayout>
     );
 }

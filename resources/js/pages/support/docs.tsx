@@ -1,12 +1,12 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AppLayout } from '@/layouts/app-layout';
+import { PublicLayout } from '@/layouts/public-layout';
 import { Head } from '@inertiajs/react';
 import { Book, Code, FileText, Video, Zap } from 'lucide-react';
 
 export default function Docs() {
     return (
-        <AppLayout>
+        <PublicLayout>
             <Head title="Documentation" />
             
             <div className="container mx-auto px-4 py-8">
@@ -143,6 +143,6 @@ export default function Docs() {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </PublicLayout>
     );
 }

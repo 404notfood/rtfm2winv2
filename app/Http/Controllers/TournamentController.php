@@ -26,9 +26,14 @@ class TournamentController extends Controller
         $user = Auth::user();
         
         $tournaments = Tournament::query()
-            ->when(!$user->isAdmin(), function ($query) use ($user) {
-                $query->where('creator_id', $user->id)
-                    ->orWhereIn('status', ['registration', 'active', 'completed']);
+            ->when(!$user || !$user->isAdmin(), function ($query) use ($user) {
+                if ($user) {
+                    $query->where('creator_id', $user->id)
+                        ->orWhereIn('status', ['registration', 'active', 'completed']);
+                } else {
+                    // Guest users only see public tournaments
+                    $query->whereIn('status', ['registration', 'active', 'completed']);
+                }
             })
             ->with(['creator', 'quiz'])
             ->withCount('participants')

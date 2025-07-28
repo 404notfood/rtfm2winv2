@@ -2,7 +2,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { AppLayout } from '@/layouts/app-layout';
+import { PublicLayout } from '@/layouts/public-layout';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import {
@@ -148,7 +148,7 @@ export default function GuestDashboard({ popular_quizzes, live_sessions, recent_
     };
 
     return (
-        <AppLayout>
+        <PublicLayout>
             <Head title="Découvrir RTFM2Win - Quiz Interactifs" />
 
             <div className="space-y-8">
@@ -551,6 +551,6 @@ export default function GuestDashboard({ popular_quizzes, live_sessions, recent_
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </PublicLayout>
     );
 }

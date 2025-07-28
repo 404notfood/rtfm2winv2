@@ -107,6 +107,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Get participations - alias for participants for backward compatibility.
+     */
+    public function participations(): HasMany
+    {
+        return $this->participants();
+    }
+
+    /**
+     * Get battle royale participations for this user.
+     */
+    public function battleRoyaleParticipations(): HasMany
+    {
+        return $this->hasMany(BattleRoyaleParticipant::class);
+    }
+
+    /**
      * Get the themes associated with this user.
      */
     public function themes(): BelongsToMany

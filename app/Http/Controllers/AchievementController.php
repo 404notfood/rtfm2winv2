@@ -39,23 +39,34 @@ class AchievementController extends Controller
 
         // Load user's earned achievements with safety checks
         try {
-            $earnedAchievements = $user->userAchievements()
-                ->with('achievement')
-                ->orderBy('earned_at', 'desc')
-                ->get()
-                ->map(function($userAchievement) {
-                return [
-                    'id' => $userAchievement->achievement->id,
-                    'name' => $userAchievement->achievement->name,
-                    'description' => $userAchievement->achievement->description,
-                    'icon' => $userAchievement->achievement->icon,
-                    'rarity' => $userAchievement->achievement->rarity,
-                    'points' => $userAchievement->achievement->points,
-                    'category' => $userAchievement->achievement->category,
-                    'earned_at' => $userAchievement->earned_at,
-                    'progress' => 100, // Completed
-                ];
-            });
+            $earnedAchievements = collect([]); // Start with empty collection
+            
+            // Check if UserAchievement model exists and has data
+            if (method_exists($user, 'userAchievements')) {
+                $userAchievements = $user->userAchievements()
+                    ->with('achievement')
+                    ->whereNotNull('earned_at')
+                    ->orderBy('earned_at', 'desc')
+                    ->get();
+                    
+                $earnedAchievements = $userAchievements->map(function($userAchievement) {
+                    if (!$userAchievement->achievement) {
+                        return null;
+                    }
+                    
+                    return [
+                        'id' => $userAchievement->achievement->id ?? 0,
+                        'name' => $userAchievement->achievement->name ?? 'Achievement',
+                        'description' => $userAchievement->achievement->description ?? '',
+                        'icon' => $userAchievement->achievement->icon ?? 'trophy',
+                        'rarity' => $userAchievement->achievement->rarity ?? 'common',
+                        'points' => $userAchievement->achievement->points ?? 0,
+                        'category' => $userAchievement->achievement->category ?? 'general',
+                        'earned_at' => $userAchievement->earned_at,
+                        'progress' => 100, // Completed
+                    ];
+                })->filter(); // Remove null values
+            }
         } catch (\Exception $e) {
             $earnedAchievements = collect([]);
         }

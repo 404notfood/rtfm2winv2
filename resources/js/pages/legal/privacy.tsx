@@ -1,11 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AppLayout } from '@/layouts/app-layout';
+import { PublicLayout } from '@/layouts/public-layout';
 import { Head } from '@inertiajs/react';
 import { Shield, Eye, Database, UserCheck, Mail, Lock } from 'lucide-react';
 
 export default function Privacy() {
     return (
-        <AppLayout>
+        <PublicLayout>
             <Head title="Politique de confidentialité" />
             
             <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -244,6 +244,6 @@ export default function Privacy() {
                     </Card>
                 </div>
             </div>
-        </AppLayout>
+        </PublicLayout>
     );
 }

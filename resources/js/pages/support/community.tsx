@@ -1,13 +1,13 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AppLayout } from '@/layouts/app-layout';
+import { PublicLayout } from '@/layouts/public-layout';
 import { Head } from '@inertiajs/react';
-import { ExternalLink, MessageCircle, Users, Github, Twitter, Discord } from 'lucide-react';
+import { ExternalLink, MessageCircle, Users, Code2, Bird, MessageSquareText } from 'lucide-react';
 
 export default function Community() {
     return (
-        <AppLayout>
+        <PublicLayout>
             <Head title="Communauté" />
             
             <div className="container mx-auto px-4 py-8">
@@ -22,7 +22,7 @@ export default function Community() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
                     {[
                         {
-                            icon: Discord,
+                            icon: MessageSquareText,
                             name: "Discord",
                             description: "Chat en temps réel avec la communauté",
                             members: "250+ membres",
@@ -30,7 +30,7 @@ export default function Community() {
                             color: "bg-[#5865F2]/10 text-[#5865F2]"
                         },
                         {
-                            icon: Github,
+                            icon: Code2,
                             name: "GitHub",
                             description: "Contribuez au projet open source",
                             members: "Contributeurs bienvenus",
@@ -38,7 +38,7 @@ export default function Community() {
                             color: "bg-gray-900/10 text-gray-900 dark:text-white"
                         },
                         {
-                            icon: Twitter,
+                            icon: Bird,
                             name: "Twitter",
                             description: "Suivez les actualités et mises à jour",
                             members: "Actualités quotidiennes",
@@ -186,13 +186,13 @@ export default function Community() {
                                 Rejoindre les discussions
                             </Button>
                             <Button disabled>
-                                <Github className="h-4 w-4 mr-2" />
+                                <Code2 className="h-4 w-4 mr-2" />
                                 Contribuer sur GitHub
                             </Button>
                         </div>
                     </Card>
                 </div>
             </div>
-        </AppLayout>
+        </PublicLayout>
     );
 }

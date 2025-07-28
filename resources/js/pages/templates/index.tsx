@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AppLayout } from '@/layouts/app-layout';
+import { PublicLayout } from '@/layouts/public-layout';
 import { Head } from '@inertiajs/react';
 import { FileText, Plus, Zap } from 'lucide-react';
 
@@ -11,7 +11,7 @@ interface Props {
 
 export default function TemplatesIndex({ templates }: Props) {
     return (
-        <AppLayout>
+        <PublicLayout>
             <Head title="Modèles de Quiz" />
             
             <div className="container mx-auto px-4 py-8">
@@ -98,6 +98,6 @@ export default function TemplatesIndex({ templates }: Props) {
                     </Button>
                 </div>
             </div>
-        </AppLayout>
+        </PublicLayout>
     );
 }

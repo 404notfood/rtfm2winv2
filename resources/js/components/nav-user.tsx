@@ -8,7 +8,7 @@ import { usePage } from '@inertiajs/react';
 import { ChevronsUpDown } from 'lucide-react';
 
 interface NavUserProps {
-    user?: User;
+    user?: User | null;
     isAdmin?: boolean;
 }
 

@@ -1,12 +1,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { AppLayout } from '@/layouts/app-layout';
+import { PublicLayout } from '@/layouts/public-layout';
 import { Head } from '@inertiajs/react';
 import { Book, HelpCircle, MessageSquare, Search, Users, Video } from 'lucide-react';
 
 export default function Help() {
     return (
-        <AppLayout>
+        <PublicLayout>
             <Head title="Centre d'aide" />
             
             <div className="container mx-auto px-4 py-8">
@@ -115,6 +115,6 @@ export default function Help() {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </PublicLayout>
     );
 }

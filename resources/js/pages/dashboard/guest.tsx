@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AppLayout } from '@/layouts/app-layout';
+import { PublicLayout } from '@/layouts/public-layout';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowRight, Calendar, Clock, Play, QrCode, Trophy, Users, Zap } from 'lucide-react';
 
@@ -26,7 +26,7 @@ interface Props {
 
 export default function GuestDashboard({ recentQuizzes, stats }: Props) {
     return (
-        <AppLayout>
+        <PublicLayout>
             <Head title="Bienvenue sur RTFM2WIN" />
 
             <div className="mx-auto max-w-6xl space-y-8">
@@ -257,6 +257,6 @@ export default function GuestDashboard({ recentQuizzes, stats }: Props) {
                     </CardContent>
                 </Card>
             </div>
-        </AppLayout>
+        </PublicLayout>
     );
 }

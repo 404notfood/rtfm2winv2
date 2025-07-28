@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 // Broadcasting Authentication Routes
-Broadcast::routes(['middleware' => ['web', 'auth']]);
+Broadcast::routes(['middleware' => ['web']]);
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -218,8 +218,33 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin', 'throt
     })->name('settings');
     
     Route::get('/content', function () {
-        return Inertia::render('admin/content');
+        return Inertia::render('admin/content', [
+            'stats' => [
+                'total_quizzes' => \App\Models\Quiz::count(),
+                'total_sessions' => 0,
+                'total_questions' => 0,
+                'active_users' => \App\Models\User::count(),
+            ]
+        ]);
     })->name('content');
+    
+    Route::get('/analytics', function () {
+        return Inertia::render('admin/analytics', [
+            'stats' => [
+                'users' => [
+                    'total' => \App\Models\User::count(),
+                    'active' => \App\Models\User::where('is_suspended', false)->count(),
+                    'presenters' => \App\Models\User::where('role', 'presenter')->count(),
+                    'admins' => \App\Models\User::where('role', 'admin')->count(),
+                ],
+                'quizzes' => [
+                    'total' => \App\Models\Quiz::count(),
+                    'published' => 0,
+                    'drafts' => 0,
+                ],
+            ]
+        ]);
+    })->name('analytics');
     
     // User management
     Route::prefix('users')->name('users.')->group(function () {
@@ -260,7 +285,7 @@ Route::prefix('api')->middleware('auth')->group(function () {
 // Pages de support et légales
 Route::get('/categories', function () {
     return Inertia::render('categories/index', [
-        'categories' => ['général', 'science', 'histoire', 'sport', 'culture'],
+        'categories' => ['frontend', 'backend', 'database', 'devops', 'mobile', 'fullstack'],
     ]);
 })->name('categories');
 
@@ -301,6 +326,10 @@ Route::get('/cookies', function () {
 Route::get('/security', function () {
     return Inertia::render('legal/security');
 })->name('security');
+
+Route::get('/about', function () {
+    return Inertia::render('about/index');
+})->name('about');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

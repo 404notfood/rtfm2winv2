@@ -1,11 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AppLayout } from '@/layouts/app-layout';
+import { PublicLayout } from '@/layouts/public-layout';
 import { Head } from '@inertiajs/react';
 import { FileText, Users, Shield, AlertTriangle, Scale, Zap } from 'lucide-react';
 
 export default function Terms() {
     return (
-        <AppLayout>
+        <PublicLayout>
             <Head title="Conditions d'utilisation" />
             
             <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -265,6 +265,6 @@ export default function Terms() {
                     </Card>
                 </div>
             </div>
-        </AppLayout>
+        </PublicLayout>
     );
 }

@@ -25,21 +25,48 @@ class QuizService
      */
     public function createQuiz(array $data, User $creator): Quiz
     {
-        // Validation et préparation des données
-        $quizData = $this->prepareQuizData($data, $creator);
-        
-        // Création du quiz
-        $quiz = Quiz::create($quizData);
-        
-        // Création des questions et réponses
-        if (isset($data['questions'])) {
-            $this->createQuestions($quiz, $data['questions']);
+        try {
+            DB::beginTransaction();
+            
+            // Debug logging
+            \Log::info('QuizService: Starting quiz creation', [
+                'data' => $data,
+                'creator_id' => $creator->id
+            ]);
+            
+            // Validation et préparation des données
+            $quizData = $this->prepareQuizData($data, $creator);
+            
+            \Log::info('QuizService: Quiz data prepared', ['quiz_data' => $quizData]);
+            
+            // Création du quiz
+            $quiz = Quiz::create($quizData);
+            
+            \Log::info('QuizService: Quiz created', ['quiz_id' => $quiz->id]);
+            
+            // Création des questions et réponses
+            if (isset($data['questions']) && is_array($data['questions'])) {
+                \Log::info('QuizService: Creating questions', ['count' => count($data['questions'])]);
+                $this->createQuestions($quiz, $data['questions']);
+            }
+            
+            // Génération du lien unique et QR code
+            $this->generateQuizLinks($quiz);
+            
+            DB::commit();
+            
+            \Log::info('QuizService: Quiz creation completed', ['quiz_id' => $quiz->id]);
+            
+            return $quiz;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('QuizService: Quiz creation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'data' => $data
+            ]);
+            throw $e;
         }
-        
-        // Génération du lien unique et QR code
-        $this->generateQuizLinks($quiz);
-        
-        return $quiz;
     }
 
     /**
@@ -183,19 +210,30 @@ class QuizService
      */
     private function prepareQuizData(array $data, User $creator): array
     {
+        $code = $this->generateUniqueCode();
+        $joinCode = $this->generateJoinCode();
+        
+        \Log::info('QuizService: Generated codes', [
+            'code' => $code,
+            'join_code' => $joinCode
+        ]);
+        
         return [
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
             'creator_id' => $creator->id,
-            'code' => $this->generateUniqueCode(),
-            'status' => $data['is_active'] ? 'active' : 'draft',
+            'code' => $code,
+            'status' => ($data['is_active'] ?? false) ? 'active' : 'draft',
             'allow_anonymous' => $data['is_public'] ?? true,
-            'join_code' => $this->generateJoinCode(),
+            'join_code' => $joinCode,
             'time_per_question' => $data['time_per_question'] ?? 30,
             'base_points' => $data['points_per_question'] ?? 1000,
             'multiple_answers' => false, // Default for now
             'time_penalty' => 10, // Default
             'divide_points_multiple' => $data['show_correct_answer'] ?? true,
+            'total_sessions' => 0,
+            'total_participants' => 0,
+            'average_score' => null,
         ];
     }
 
@@ -245,17 +283,37 @@ class QuizService
      */
     private function generateQuizLinks(Quiz $quiz): void
     {
-        // Générer le lien unique
-        $uniqueLink = route('join', ['code' => $quiz->code]);
-        
-        // Générer le QR code
-        $qrCodePath = $this->generateQrCode($quiz->code, $uniqueLink);
-        
-        // Mettre à jour le quiz
-        $quiz->update([
-            'unique_link' => $uniqueLink,
-            'qr_code_path' => $qrCodePath,
-        ]);
+        try {
+            // Générer le lien unique avec timestamp pour garantir unicité
+            $uniqueLink = url("/join/{$quiz->code}");
+            
+            \Log::info('QuizService: Generating quiz links', [
+                'quiz_id' => $quiz->id,
+                'code' => $quiz->code,
+                'unique_link' => $uniqueLink
+            ]);
+            
+            // Générer le QR code
+            $qrCodePath = $this->generateQrCode($quiz->code, $uniqueLink);
+            
+            // Mettre à jour le quiz
+            $quiz->update([
+                'unique_link' => $uniqueLink,
+                'qr_code_path' => $qrCodePath,
+            ]);
+            
+            \Log::info('QuizService: Quiz links generated successfully', [
+                'quiz_id' => $quiz->id,
+                'unique_link' => $uniqueLink,
+                'qr_code_path' => $qrCodePath
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('QuizService: Failed to generate quiz links', [
+                'quiz_id' => $quiz->id,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
     }
 
     /**
