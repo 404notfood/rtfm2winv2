@@ -31,6 +31,11 @@ class QuizService
         // Création du quiz
         $quiz = Quiz::create($quizData);
         
+        // Création des questions et réponses
+        if (isset($data['questions'])) {
+            $this->createQuestions($quiz, $data['questions']);
+        }
+        
         // Génération du lien unique et QR code
         $this->generateQuizLinks($quiz);
         
@@ -106,17 +111,16 @@ class QuizService
             // Create new questions
             foreach ($data['questions'] as $questionData) {
                 $question = $quiz->questions()->create([
-                    'text' => $questionData['text'],
-                    'type' => $questionData['type'],
-                    'time_limit' => $questionData['time_limit'] ?? $data['time_per_question'],
+                    'question_text' => $questionData['text'],
                     'points' => $questionData['points'] ?? 100,
                     'order_index' => $questionData['order'] ?? 1,
+                    'multiple_answers' => $questionData['type'] === 'multiple' ? true : false,
                 ]);
 
                 // Create answers
                 foreach ($questionData['answers'] as $answerData) {
                     $question->answers()->create([
-                        'text' => $answerData['text'],
+                        'answer_text' => $answerData['text'],
                         'is_correct' => $answerData['is_correct'],
                     ]);
                 }
@@ -179,13 +183,20 @@ class QuizService
      */
     private function prepareQuizData(array $data, User $creator): array
     {
-        return array_merge($data, [
+        return [
+            'title' => $data['title'],
+            'description' => $data['description'] ?? null,
             'creator_id' => $creator->id,
             'code' => $this->generateUniqueCode(),
-            'status' => $data['status'] ?? 'draft',
-            'allow_anonymous' => $data['allow_anonymous'] ?? true,
+            'status' => $data['is_active'] ? 'active' : 'draft',
+            'allow_anonymous' => $data['is_public'] ?? true,
             'join_code' => $this->generateJoinCode(),
-        ]);
+            'time_per_question' => $data['time_per_question'] ?? 30,
+            'base_points' => $data['points_per_question'] ?? 1000,
+            'multiple_answers' => false, // Default for now
+            'time_penalty' => 10, // Default
+            'divide_points_multiple' => $data['show_correct_answer'] ?? true,
+        ];
     }
 
     /**
@@ -235,7 +246,7 @@ class QuizService
     private function generateQuizLinks(Quiz $quiz): void
     {
         // Générer le lien unique
-        $uniqueLink = route('quiz.join', ['code' => $quiz->code]);
+        $uniqueLink = route('join', ['code' => $quiz->code]);
         
         // Générer le QR code
         $qrCodePath = $this->generateQrCode($quiz->code, $uniqueLink);
@@ -267,6 +278,33 @@ class QuizService
     }
 
     /**
+     * Créer les questions et réponses pour un quiz.
+     * 
+     * @param Quiz $quiz
+     * @param array $questionsData
+     * @return void
+     */
+    private function createQuestions(Quiz $quiz, array $questionsData): void
+    {
+        foreach ($questionsData as $index => $questionData) {
+            $question = $quiz->questions()->create([
+                'question_text' => $questionData['text'],
+                'points' => $questionData['points'] ?? 1000,
+                'order_index' => $index + 1,
+                'multiple_answers' => $questionData['type'] === 'multiple' ? true : false,
+            ]);
+            
+            // Créer les réponses
+            foreach ($questionData['answers'] as $answerData) {
+                $question->answers()->create([
+                    'answer_text' => $answerData['text'],
+                    'is_correct' => $answerData['is_correct'],
+                ]);
+            }
+        }
+    }
+
+    /**
      * Dupliquer les questions d'un quiz.
      * 
      * @param Quiz $originalQuiz
@@ -277,17 +315,16 @@ class QuizService
     {
         foreach ($originalQuiz->questions as $question) {
             $newQuestion = $duplicatedQuiz->questions()->create([
-                'text' => $question->text,
-                'type' => $question->type,
+                'question_text' => $question->question_text,
                 'points' => $question->points,
-                'time_limit' => $question->time_limit,
                 'order_index' => $question->order_index,
+                'multiple_answers' => $question->multiple_answers,
             ]);
             
             // Dupliquer les réponses
             foreach ($question->answers as $answer) {
                 $newQuestion->answers()->create([
-                    'text' => $answer->text,
+                    'answer_text' => $answer->answer_text,
                     'is_correct' => $answer->is_correct,
                     'explanation' => $answer->explanation,
                 ]);

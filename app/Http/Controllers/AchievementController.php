@@ -37,12 +37,13 @@ class AchievementController extends Controller
                 ->with('message', 'Vous devez être connecté pour voir vos achievements.');
         }
 
-        // Load user's earned achievements
-        $earnedAchievements = $user->userAchievements()
-            ->with('achievement')
-            ->orderBy('earned_at', 'desc')
-            ->get()
-            ->map(function($userAchievement) {
+        // Load user's earned achievements with safety checks
+        try {
+            $earnedAchievements = $user->userAchievements()
+                ->with('achievement')
+                ->orderBy('earned_at', 'desc')
+                ->get()
+                ->map(function($userAchievement) {
                 return [
                     'id' => $userAchievement->achievement->id,
                     'name' => $userAchievement->achievement->name,
@@ -55,13 +56,17 @@ class AchievementController extends Controller
                     'progress' => 100, // Completed
                 ];
             });
+        } catch (\Exception $e) {
+            $earnedAchievements = collect([]);
+        }
             
-        // Load available achievements not yet earned
-        $earnedIds = $earnedAchievements->pluck('id');
-        $availableAchievements = Achievement::whereNotIn('id', $earnedIds)
-            ->where('is_active', true)
-            ->get()
-            ->map(function($achievement) use ($user) {
+        // Load available achievements not yet earned with safety
+        try {
+            $earnedIds = $earnedAchievements->pluck('id');
+            $availableAchievements = Achievement::whereNotIn('id', $earnedIds)
+                ->where('is_active', true)
+                ->get()
+                ->map(function($achievement) use ($user) {
                 $progress = $this->achievementService->calculateProgress($user, $achievement);
                 return [
                     'id' => $achievement->id,
@@ -75,11 +80,15 @@ class AchievementController extends Controller
                     'requirements' => $achievement->requirements,
                 ];
             });
+        } catch (\Exception $e) {
+            $availableAchievements = collect([]);
+        }
             
-        // Load user badges and trophies
-        $badges = Badge::whereIn('id', $user->badges ?? [])
-            ->get()
-            ->map(function($badge) {
+        // Load user badges and trophies with safety
+        try {
+            $badges = Badge::whereIn('id', $user->badges ?? [])
+                ->get()
+                ->map(function($badge) {
                 return [
                     'id' => $badge->id,
                     'name' => $badge->name,
@@ -89,10 +98,14 @@ class AchievementController extends Controller
                     'rarity' => $badge->rarity,
                 ];
             });
+        } catch (\Exception $e) {
+            $badges = collect([]);
+        }
             
-        $trophies = Trophy::whereIn('id', $user->trophies ?? [])
-            ->get()
-            ->map(function($trophy) {
+        try {
+            $trophies = Trophy::whereIn('id', $user->trophies ?? [])
+                ->get()
+                ->map(function($trophy) {
                 return [
                     'id' => $trophy->id,
                     'name' => $trophy->name,
@@ -102,6 +115,9 @@ class AchievementController extends Controller
                     'tier' => $trophy->tier,
                 ];
             });
+        } catch (\Exception $e) {
+            $trophies = collect([]);
+        }
         
         // Calculate statistics
         $totalEarned = $earnedAchievements->count();

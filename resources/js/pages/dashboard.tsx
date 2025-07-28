@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type SharedData } from '@/types';
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 
 // ShadcnUI Components
@@ -68,6 +68,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Dashboard({ stats, recentQuizzes, recentTrophies, recentActivity }: DashboardProps) {
     const { auth } = usePage<SharedData>().props;
+    const user = auth.user;
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -187,6 +188,35 @@ export default function Dashboard({ stats, recentQuizzes, recentTrophies, recent
                     </Card>
                 </motion.div>
 
+                {/* Bouton pour rejoindre des sessions actives */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                    className="mb-6"
+                >
+                    <Card className="border-green-500/20 bg-gradient-to-br from-green-500/10 to-green-500/5">
+                        <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-lg font-semibold text-green-700 mb-2">
+                                        Rejoindre un Quiz
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground">
+                                        Participez aux quiz lancés par les présentateurs
+                                    </p>
+                                </div>
+                                <Button asChild className="bg-green-600 hover:bg-green-700">
+                                    <Link href="/sessions/active">
+                                        <Users className="h-4 w-4 mr-2" />
+                                        Sessions Actives
+                                    </Link>
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+
                 {/* Contenu principal */}
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     {/* Quiz récents (2/3) */}
@@ -256,9 +286,30 @@ export default function Dashboard({ stats, recentQuizzes, recentTrophies, recent
                                                 <Button variant="ghost" size="sm" onClick={() => router.visit(`/quiz/${quiz.id}`)}>
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
-                                                <Button variant="ghost" size="sm" onClick={() => router.visit(`/quiz/${quiz.id}/play`)}>
-                                                    <Play className="h-4 w-4" />
-                                                </Button>
+                                                {/* Bouton présenter - seulement pour les créateurs du quiz */}
+                                                {user && (quiz.creator_id === user.id || user.role === 'admin') && (
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="sm" 
+                                                        onClick={() => {
+                                                            console.log('Starting presentation for quiz:', quiz);
+                                                            if (quiz.status !== 'active') {
+                                                                alert('Ce quiz n\'est pas encore publié. Changez son statut à "Actif" pour pouvoir le présenter.');
+                                                                return;
+                                                            }
+                                                            if (!quiz.questions_count) {
+                                                                alert('Ce quiz n\'a pas encore de questions. Ajoutez des questions avant de pouvoir le présenter.');
+                                                                return;
+                                                            }
+                                                            router.get(route('quiz.play', quiz.id));
+                                                        }}
+                                                        disabled={quiz.status !== 'active' || !quiz.questions_count}
+                                                        title={quiz.status !== 'active' ? 'Quiz non publié' : !quiz.questions_count ? 'Aucune question' : 'Présenter ce quiz'}
+                                                        className="text-green-600 hover:text-green-700"
+                                                    >
+                                                        <Play className="h-4 w-4" />
+                                                    </Button>
+                                                )}
                                             </div>
                                         </motion.div>
                                     ))

@@ -23,17 +23,13 @@ interface Quiz {
     title: string;
     description?: string;
     category?: string;
-    status: 'draft' | 'published' | 'archived';
-    is_active: boolean;
-    is_public: boolean;
+    status: 'draft' | 'active' | 'archived';
+    allow_anonymous: boolean;
     time_per_question: number;
-    points_per_question: number;
-    show_correct_answer: boolean;
-    randomize_questions: boolean;
-    randomize_answers: boolean;
-    allow_multiple_attempts: boolean;
+    base_points: number;
+    multiple_answers: boolean;
     questions_count: number;
-    tags: Tag[];
+    tags?: Tag[];
     created_at: string;
     updated_at: string;
 }
@@ -44,7 +40,7 @@ interface Props {
 }
 
 export default function QuizEdit({ quiz, tags }: Props) {
-    const [selectedTags, setSelectedTags] = useState<number[]>(quiz.tags.map((tag) => tag.id));
+    const [selectedTags, setSelectedTags] = useState<number[]>(quiz.tags?.map((tag) => tag.id) || []);
     const [newTag, setNewTag] = useState('');
 
     const { data, setData, put, processing, errors } = useForm({
@@ -52,14 +48,10 @@ export default function QuizEdit({ quiz, tags }: Props) {
         description: quiz.description || '',
         category: quiz.category || '',
         status: quiz.status,
-        is_active: quiz.is_active,
-        is_public: quiz.is_public,
+        allow_anonymous: quiz.allow_anonymous,
         time_per_question: quiz.time_per_question,
-        points_per_question: quiz.points_per_question,
-        show_correct_answer: quiz.show_correct_answer,
-        randomize_questions: quiz.randomize_questions,
-        randomize_answers: quiz.randomize_answers,
-        allow_multiple_attempts: quiz.allow_multiple_attempts,
+        base_points: quiz.base_points,
+        multiple_answers: quiz.multiple_answers,
         tags: selectedTags,
     });
 
@@ -101,7 +93,7 @@ export default function QuizEdit({ quiz, tags }: Props) {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'published':
+            case 'active':
                 return 'bg-green-100 text-green-800';
             case 'draft':
                 return 'bg-yellow-100 text-yellow-800';
@@ -114,8 +106,8 @@ export default function QuizEdit({ quiz, tags }: Props) {
 
     const getStatusLabel = (status: string) => {
         switch (status) {
-            case 'published':
-                return 'Publié';
+            case 'active':
+                return 'Actif';
             case 'draft':
                 return 'Brouillon';
             case 'archived':
@@ -243,7 +235,7 @@ export default function QuizEdit({ quiz, tags }: Props) {
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="draft">Brouillon</SelectItem>
-                                            <SelectItem value="published">Publié</SelectItem>
+                                            <SelectItem value="active">Actif</SelectItem>
                                             <SelectItem value="archived">Archivé</SelectItem>
                                         </SelectContent>
                                     </Select>
@@ -335,15 +327,15 @@ export default function QuizEdit({ quiz, tags }: Props) {
                                 </div>
 
                                 <div>
-                                    <Label htmlFor="points_per_question">Points par question</Label>
+                                    <Label htmlFor="base_points">Points de base</Label>
                                     <Input
-                                        id="points_per_question"
+                                        id="base_points"
                                         type="number"
                                         min="100"
                                         max="5000"
                                         step="100"
-                                        value={data.points_per_question}
-                                        onChange={(e) => setData('points_per_question', parseInt(e.target.value))}
+                                        value={data.base_points}
+                                        onChange={(e) => setData('base_points', parseInt(e.target.value))}
                                     />
                                 </div>
                             </div>
@@ -353,56 +345,20 @@ export default function QuizEdit({ quiz, tags }: Props) {
                             <div className="space-y-4">
                                 <div className="flex items-center space-x-2">
                                     <Checkbox
-                                        id="is_active"
-                                        checked={data.is_active}
-                                        onCheckedChange={(checked) => setData('is_active', !!checked)}
+                                        id="allow_anonymous"
+                                        checked={data.allow_anonymous}
+                                        onCheckedChange={(checked) => setData('allow_anonymous', !!checked)}
                                     />
-                                    <Label htmlFor="is_active">Quiz actif</Label>
+                                    <Label htmlFor="allow_anonymous">Autoriser la participation anonyme</Label>
                                 </div>
 
                                 <div className="flex items-center space-x-2">
                                     <Checkbox
-                                        id="is_public"
-                                        checked={data.is_public}
-                                        onCheckedChange={(checked) => setData('is_public', !!checked)}
+                                        id="multiple_answers"
+                                        checked={data.multiple_answers}
+                                        onCheckedChange={(checked) => setData('multiple_answers', !!checked)}
                                     />
-                                    <Label htmlFor="is_public">Quiz public (visible par tous)</Label>
-                                </div>
-
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="show_correct_answer"
-                                        checked={data.show_correct_answer}
-                                        onCheckedChange={(checked) => setData('show_correct_answer', !!checked)}
-                                    />
-                                    <Label htmlFor="show_correct_answer">Afficher les bonnes réponses</Label>
-                                </div>
-
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="randomize_questions"
-                                        checked={data.randomize_questions}
-                                        onCheckedChange={(checked) => setData('randomize_questions', !!checked)}
-                                    />
-                                    <Label htmlFor="randomize_questions">Mélanger les questions</Label>
-                                </div>
-
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="randomize_answers"
-                                        checked={data.randomize_answers}
-                                        onCheckedChange={(checked) => setData('randomize_answers', !!checked)}
-                                    />
-                                    <Label htmlFor="randomize_answers">Mélanger les réponses</Label>
-                                </div>
-
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox
-                                        id="allow_multiple_attempts"
-                                        checked={data.allow_multiple_attempts}
-                                        onCheckedChange={(checked) => setData('allow_multiple_attempts', !!checked)}
-                                    />
-                                    <Label htmlFor="allow_multiple_attempts">Autoriser plusieurs tentatives</Label>
+                                    <Label htmlFor="multiple_answers">Réponses multiples autorisées</Label>
                                 </div>
                             </div>
                         </CardContent>

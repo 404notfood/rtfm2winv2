@@ -45,7 +45,7 @@ class Rtfm2winServiceProvider extends ServiceProvider
         ], 'rtfm2win-config');
 
         // Enregistrer les vues personnalisées
-        $this->loadViewsFrom(__DIR__.'/../../resources/views/rtfm2win', 'rtfm2win');
+        // $this->loadViewsFrom(__DIR__.'/../../resources/views/rtfm2win', 'rtfm2win');
 
         // Enregistrer les migrations si nécessaire
         // $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');

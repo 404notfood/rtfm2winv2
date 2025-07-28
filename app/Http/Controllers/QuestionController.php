@@ -17,7 +17,7 @@ class QuestionController extends Controller
         
         $questions = $quiz->questions()
             ->with('answers')
-            ->orderBy('order')
+            ->orderBy('order_index')
             ->paginate(10);
 
         return Inertia::render('quiz/questions/index', [
@@ -61,16 +61,15 @@ class QuestionController extends Controller
         }
 
         $question = $quiz->questions()->create([
-            'text' => $validated['text'],
-            'type' => $validated['type'],
-            'time_limit' => $validated['time_limit'] ?? 30,
+            'question_text' => $validated['text'],
+            'multiple_answers' => $validated['type'] === 'multiple',
             'points' => $validated['points'] ?? 1000,
-            'order' => $quiz->questions()->max('order') + 1,
+            'order_index' => $quiz->questions()->max('order_index') + 1,
         ]);
 
         foreach ($validated['answers'] as $answerData) {
             $question->answers()->create([
-                'text' => $answerData['text'],
+                'answer_text' => $answerData['text'],
                 'is_correct' => $answerData['is_correct'],
             ]);
         }
@@ -131,9 +130,8 @@ class QuestionController extends Controller
         }
 
         $question->update([
-            'text' => $validated['text'],
-            'type' => $validated['type'],
-            'time_limit' => $validated['time_limit'] ?? 30,
+            'question_text' => $validated['text'],
+            'multiple_answers' => $validated['type'] === 'multiple',
             'points' => $validated['points'] ?? 1000,
         ]);
 
@@ -145,7 +143,7 @@ class QuestionController extends Controller
                 $answer = $question->answers()->find($answerData['id']);
                 if ($answer) {
                     $answer->update([
-                        'text' => $answerData['text'],
+                        'answer_text' => $answerData['text'],
                         'is_correct' => $answerData['is_correct'],
                     ]);
                     $existingAnswerIds[] = $answer->id;
@@ -153,7 +151,7 @@ class QuestionController extends Controller
             } else {
                 // Créer une nouvelle réponse
                 $answer = $question->answers()->create([
-                    'text' => $answerData['text'],
+                    'answer_text' => $answerData['text'],
                     'is_correct' => $answerData['is_correct'],
                 ]);
                 $existingAnswerIds[] = $answer->id;
@@ -186,13 +184,13 @@ class QuestionController extends Controller
         $validated = $request->validate([
             'questions' => 'required|array',
             'questions.*.id' => 'required|exists:questions,id',
-            'questions.*.order' => 'required|integer|min:1',
+            'questions.*.order_index' => 'required|integer|min:1',
         ]);
 
         foreach ($validated['questions'] as $questionData) {
             Question::where('id', $questionData['id'])
                 ->where('quiz_id', $quiz->id)
-                ->update(['order' => $questionData['order']]);
+                ->update(['order_index' => $questionData['order_index']]);
         }
 
         return back()->with('success', 'Ordre des questions mis à jour.');
@@ -203,14 +201,14 @@ class QuestionController extends Controller
         $this->authorize('update', $quiz);
 
         $duplicatedQuestion = $question->replicate();
-        $duplicatedQuestion->text = $question->text . ' (Copie)';
-        $duplicatedQuestion->order = $quiz->questions()->max('order') + 1;
+        $duplicatedQuestion->question_text = $question->question_text . ' (Copie)';
+        $duplicatedQuestion->order_index = $quiz->questions()->max('order_index') + 1;
         $duplicatedQuestion->save();
 
         // Dupliquer les réponses
         foreach ($question->answers as $answer) {
             $duplicatedQuestion->answers()->create([
-                'text' => $answer->text,
+                'answer_text' => $answer->answer_text,
                 'is_correct' => $answer->is_correct,
             ]);
         }
@@ -246,7 +244,7 @@ class QuestionController extends Controller
     private function importFromCsv(Quiz $quiz, string $content)
     {
         $lines = explode("\n", $content);
-        $maxOrder = $quiz->questions()->max('order') ?? 0;
+        $maxOrder = $quiz->questions()->max('order_index') ?? 0;
 
         foreach ($lines as $line) {
             $data = str_getcsv($line);
@@ -257,17 +255,16 @@ class QuestionController extends Controller
 
                 if (!empty($questionText) && !empty($answers)) {
                     $question = $quiz->questions()->create([
-                        'text' => $questionText,
-                        'type' => 'single',
-                        'time_limit' => 30,
+                        'question_text' => $questionText,
+                        'multiple_answers' => false,
                         'points' => 1000,
-                        'order' => ++$maxOrder,
+                        'order_index' => ++$maxOrder,
                     ]);
 
                     foreach ($answers as $index => $answerText) {
                         if (!empty($answerText)) {
                             $question->answers()->create([
-                                'text' => $answerText,
+                                'answer_text' => $answerText,
                                 'is_correct' => ($index + 1) === $correctIndex,
                             ]);
                         }

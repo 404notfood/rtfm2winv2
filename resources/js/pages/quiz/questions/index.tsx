@@ -41,15 +41,15 @@ interface Props {
         last_page: number;
         total: number;
     };
-    filters: {
+    filters?: {
         search?: string;
         type?: string;
     };
     can_edit: boolean;
 }
 
-export default function QuestionIndex({ quiz, questions, filters, can_edit }: Props) {
-    const [search, setSearch] = useState(filters.search || '');
+export default function QuestionIndex({ quiz, questions, filters = {}, can_edit }: Props) {
+    const [search, setSearch] = useState(filters?.search || '');
     const { get, post, processing } = useForm();
 
     const handleSearch = (e: React.FormEvent) => {

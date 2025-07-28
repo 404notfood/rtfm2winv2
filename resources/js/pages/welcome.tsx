@@ -58,10 +58,12 @@ const Header = () => {
                             <span>Explorer</span>
                             <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-primary to-secondary transition-all duration-300 group-hover:w-full"></div>
                         </Link>
-                        <Link href="/quiz/create" className="group relative px-8 py-3 text-foreground/80 transition-colors hover:text-foreground">
-                            <span>Créer</span>
-                            <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-primary to-secondary transition-all duration-300 group-hover:w-full"></div>
-                        </Link>
+                        {(auth.user?.role === 'admin' || auth.user?.role === 'presenter') && (
+                            <Link href="/quiz/create" className="group relative px-8 py-3 text-foreground/80 transition-colors hover:text-foreground">
+                                <span>Créer</span>
+                                <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-primary to-secondary transition-all duration-300 group-hover:w-full"></div>
+                            </Link>
+                        )}
                         <Link href="/about" className="group relative px-8 py-3 text-foreground/80 transition-colors hover:text-foreground">
                             <span>À propos</span>
                             <div className="absolute bottom-0 left-0 h-0.5 w-0 bg-gradient-to-r from-primary to-secondary transition-all duration-300 group-hover:w-full"></div>
@@ -120,9 +122,11 @@ const Header = () => {
                                 Explorer les Quiz
                             </Link>
 
-                            <Link href="/quiz/create" className="block rounded-lg px-6 py-4 text-foreground transition-colors hover:bg-muted/50">
-                                Créer un Quiz
-                            </Link>
+                            {(auth.user?.role === 'admin' || auth.user?.role === 'presenter') && (
+                                <Link href="/quiz/create" className="block rounded-lg px-6 py-4 text-foreground transition-colors hover:bg-muted/50">
+                                    Créer un Quiz
+                                </Link>
+                            )}
 
                             <Link href="/about" className="block rounded-lg px-6 py-4 text-foreground transition-colors hover:bg-muted/50">
                                 À propos
@@ -481,14 +485,16 @@ const CTASection = () => {
                                 </Link>
                             </Button>
                         )}
-                        <Button
-                            size="lg"
-                            variant="outline"
-                            className="border-2 border-white px-10 py-6 text-lg text-white backdrop-blur-sm hover:bg-white/10"
-                            asChild
-                        >
-                            <Link href="/quiz/create">Créer mon Premier Quiz</Link>
-                        </Button>
+                        {(auth.user?.role === 'admin' || auth.user?.role === 'presenter') && (
+                            <Button
+                                size="lg"
+                                variant="outline"
+                                className="border-2 border-white px-10 py-6 text-lg text-white backdrop-blur-sm hover:bg-white/10"
+                                asChild
+                            >
+                                <Link href="/quiz/create">Créer mon Premier Quiz</Link>
+                            </Button>
+                        )}
                     </div>
                 </motion.div>
             </div>
@@ -527,8 +533,8 @@ const Footer = () => {
                         <div className="flex flex-col items-center space-y-6">
                             <h3 className="text-lg font-semibold text-foreground">Produit</h3>
                             <div className="flex flex-col items-center space-y-4">
-                                <Link href="/quiz/create" className="text-muted-foreground transition-colors hover:text-primary">
-                                    Créer un Quiz
+                                <Link href="/quiz" className="text-muted-foreground transition-colors hover:text-primary">
+                                    Explorer les Quiz
                                 </Link>
                                 <Link href="/quiz" className="text-muted-foreground transition-colors hover:text-primary">
                                     Quiz Populaires

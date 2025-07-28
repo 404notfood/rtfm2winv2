@@ -149,7 +149,7 @@ class DashboardController extends Controller
         
         // Quiz le plus populaire
         $mostPopularQuiz = $myQuizzes->map(function ($quiz) {
-            $participantCount = Participant::whereHas('quiz_session', function ($query) use ($quiz) {
+            $participantCount = Participant::whereHas('quizSession', function ($query) use ($quiz) {
                 $query->where('quiz_id', $quiz->id);
             })->count();
             $quiz->participant_count = $participantCount;
@@ -170,7 +170,7 @@ class DashboardController extends Controller
             ->limit(5)
             ->get()
             ->map(function ($quiz) {
-                $participantCount = Participant::whereHas('quiz_session', function ($query) use ($quiz) {
+                $participantCount = Participant::whereHas('quizSession', function ($query) use ($quiz) {
                     $query->where('quiz_id', $quiz->id);
                 })->count();
                 

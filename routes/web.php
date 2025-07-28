@@ -28,17 +28,26 @@ Route::get('/', function () {
 // Dashboard (supports all user types including guests)
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+// Active sessions - for participants to join
+Route::get('/sessions/active', [QuizSessionController::class, 'activeSessions'])->name('sessions.active');
+
 // Quiz routes
 Route::prefix('quiz')->name('quiz.')->group(function () {
     Route::get('/', [QuizController::class, 'index'])->name('index');
     Route::get('/create', [QuizController::class, 'create'])->name('create')->middleware('auth');
     Route::post('/', [QuizController::class, 'store'])->name('store')->middleware('auth');
-    Route::get('/{id}', [QuizController::class, 'show'])->name('show');
+    
+    // Specific routes first (before dynamic {id})
+    Route::get('/{id}/play', [QuizController::class, 'play'])->name('play');
+    Route::get('/{id}/analytics', [QuizController::class, 'analytics'])->name('analytics')->middleware('auth');
     Route::get('/{id}/edit', [QuizController::class, 'edit'])->name('edit')->middleware('auth');
     Route::put('/{id}', [QuizController::class, 'update'])->name('update')->middleware('auth');
     Route::delete('/{id}', [QuizController::class, 'destroy'])->name('destroy')->middleware('auth');
     Route::post('/{id}/duplicate', [QuizController::class, 'duplicate'])->name('duplicate')->middleware('auth');
     Route::post('/{id}/regenerate-link', [QuizController::class, 'regenerateLink'])->name('regenerate-link')->middleware('auth');
+    
+    // Dynamic {id} route last
+    Route::get('/{id}', [QuizController::class, 'show'])->name('show');
     
     // Question management routes
     Route::prefix('{quiz}/questions')->name('questions.')->middleware('auth')->group(function () {
@@ -198,7 +207,7 @@ Route::prefix('export')->name('export.')->middleware('auth')->group(function () 
 });
 
 // Admin routes - Rate limited for security
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin', 'throttle:admin_actions,100,1'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin', 'throttle:admin_actions'])->group(function () {
     Route::get('/dashboard', function () {
         return app(DashboardController::class)->index(request());
     })->name('dashboard');

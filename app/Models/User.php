@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -79,6 +80,14 @@ class User extends Authenticatable
     public function quizzes(): HasMany
     {
         return $this->hasMany(Quiz::class, 'creator_id');
+    }
+
+    /**
+     * Get all quiz sessions where user participated.
+     */
+    public function quizSessions(): HasMany
+    {
+        return $this->hasMany(QuizSession::class, 'presenter_id');
     }
 
     /**
@@ -246,8 +255,24 @@ class User extends Authenticatable
             return asset($this->preferredRandomAvatar->image_path);
         }
         
-        // Default avatar or uploaded avatar
-        return $this->avatar ? asset($this->avatar) : asset('images/default-avatar.png');
+        // Uploaded avatar
+        if ($this->avatar) {
+            return asset($this->avatar);
+        }
+        
+        // Generate DiceBear avatar based on user ID and name
+        return $this->generateDiceBearAvatar();
+    }
+
+    /**
+     * Generate a DiceBear avatar URL.
+     */
+    public function generateDiceBearAvatar(): string
+    {
+        $seed = $this->id . '-' . Str::slug($this->name);
+        $style = 'avataaars'; // You can use: avataaars, personas, lorelei, notionists, etc.
+        
+        return "https://api.dicebear.com/9.x/{$style}/svg?seed={$seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf";
     }
 
     /**

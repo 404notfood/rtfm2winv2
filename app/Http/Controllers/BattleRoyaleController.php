@@ -50,9 +50,36 @@ class BattleRoyaleController extends Controller
                 ];
             });
         
+        $user = request()->user();
+        
+        // User stats for battle royale
+        $userStats = [
+            'battles_played' => 0,
+            'victories' => 0,
+            'eliminations' => 0,
+            'survival_rate' => 0.0,
+        ];
+        
+        if ($user) {
+            // TODO: Calculate real stats from battle royale participation
+            $userStats = [
+                'battles_played' => $user->battleRoyaleParticipations()->count(),
+                'victories' => $user->battleRoyaleParticipations()->where('final_position', 1)->count(),
+                'eliminations' => $user->battleRoyaleParticipations()->whereNotNull('eliminated_at')->count(),
+                'survival_rate' => 75.0, // TODO: Calculate from actual data
+            ];
+        }
+        
         return Inertia::render('battle-royale/index', [
-            'activeSessions' => $activeSessions,
-            'availableQuizzes' => Quiz::select('id', 'title')->get(),
+            'sessions' => [
+                'data' => $activeSessions,
+                'current_page' => 1,
+                'last_page' => 1,
+                'total' => $activeSessions->count(),
+            ],
+            'filters' => request()->only(['search', 'status']),
+            'can_create' => $user && in_array($user->role, ['presenter', 'admin']),
+            'user_stats' => $userStats,
         ]);
     }
 

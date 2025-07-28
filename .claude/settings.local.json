@@ -12,7 +12,8 @@
       "Bash(npm run types:*)",
       "Bash(ls:*)",
       "Bash(php artisan migrate:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(php artisan tinker:*)"
     ],
     "deny": []
   }

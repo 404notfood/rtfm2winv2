@@ -51,7 +51,7 @@ interface Props {
         last_page: number;
         total: number;
     };
-    filters: {
+    filters?: {
         search?: string;
         status?: string;
         type?: string;
@@ -60,8 +60,8 @@ interface Props {
     user_tournaments: Tournament[];
 }
 
-export default function TournamentsIndex({ tournaments, filters, can_create, user_tournaments }: Props) {
-    const [search, setSearch] = useState(filters.search || '');
+export default function TournamentsIndex({ tournaments, filters = {}, can_create, user_tournaments }: Props) {
+    const [search, setSearch] = useState(filters?.search || '');
     const { get, post, processing } = useForm();
 
     const handleSearch = (e: React.FormEvent) => {

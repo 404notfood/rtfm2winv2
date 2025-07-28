@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { AppLayout } from '@/layouts/app-layout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { Clock, Copy, Edit, MoreHorizontal, Play, Plus, QrCode, Search, Trash2, Users } from 'lucide-react';
 import { useState } from 'react';
 
@@ -28,12 +28,7 @@ interface Quiz {
 }
 
 interface Props {
-    quizzes: {
-        data: Quiz[];
-        current_page: number;
-        last_page: number;
-        total: number;
-    };
+    quizzes: Quiz[];
     filters: {
         search?: string;
         tag?: string;
@@ -42,9 +37,15 @@ interface Props {
     can_create: boolean;
 }
 
-export default function QuizIndex({ quizzes, filters, can_create }: Props) {
+export default function QuizIndex({ quizzes, filters = {}, can_create }: Props) {
     const [search, setSearch] = useState(filters.search || '');
-    const { get, processing } = useForm();
+    const { get, post, delete: delete_, processing } = useForm();
+    const { props } = usePage();
+    const user = (props as any).auth?.user;
+
+    const canPresentQuiz = (quiz: Quiz) => {
+        return user && (quiz.creator.id === user.id || user.role === 'admin');
+    };
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -55,20 +56,24 @@ export default function QuizIndex({ quizzes, filters, can_create }: Props) {
         });
     };
 
-    const handleQuickAction = (action: string, quizId: number) => {
+    const handleQuickAction = (action: string, quiz: Quiz) => {
         switch (action) {
             case 'play':
-                get(`/quiz/${quizId}/session/create`);
+                if (!canPresentQuiz(quiz)) {
+                    alert('Seul le créateur du quiz peut lancer une présentation.');
+                    return;
+                }
+                get(`/quiz/${quiz.id}/play`);
                 break;
             case 'edit':
-                get(`/quiz/${quizId}/edit`);
+                get(`/quiz/${quiz.id}/edit`);
                 break;
             case 'duplicate':
-                get(`/quiz/${quizId}/duplicate`, { method: 'post' });
+                post(`/quiz/${quiz.id}/duplicate`);
                 break;
             case 'delete':
                 if (confirm('Êtes-vous sûr de vouloir supprimer ce quiz ?')) {
-                    get(`/quiz/${quizId}`, { method: 'delete' });
+                    delete_(`/quiz/${quiz.id}`);
                 }
                 break;
         }
@@ -117,7 +122,7 @@ export default function QuizIndex({ quizzes, filters, can_create }: Props) {
 
                 {/* Quiz Grid */}
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {quizzes.data.map((quiz) => (
+                    {quizzes.map((quiz) => (
                         <Card key={quiz.id} className="group transition-shadow hover:shadow-lg">
                             <CardHeader>
                                 <div className="flex items-start justify-between">
@@ -136,19 +141,21 @@ export default function QuizIndex({ quizzes, filters, can_create }: Props) {
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={() => handleQuickAction('play', quiz.id)}>
-                                                <Play className="mr-2 h-4 w-4" />
-                                                Jouer
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleQuickAction('edit', quiz.id)}>
+                                            {canPresentQuiz(quiz) && (
+                                                <DropdownMenuItem onClick={() => handleQuickAction('play', quiz)}>
+                                                    <Play className="mr-2 h-4 w-4" />
+                                                    Présenter
+                                                </DropdownMenuItem>
+                                            )}
+                                            <DropdownMenuItem onClick={() => handleQuickAction('edit', quiz)}>
                                                 <Edit className="mr-2 h-4 w-4" />
                                                 Modifier
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleQuickAction('duplicate', quiz.id)}>
+                                            <DropdownMenuItem onClick={() => handleQuickAction('duplicate', quiz)}>
                                                 <Copy className="mr-2 h-4 w-4" />
                                                 Dupliquer
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleQuickAction('delete', quiz.id)} className="text-destructive">
+                                            <DropdownMenuItem onClick={() => handleQuickAction('delete', quiz)} className="text-destructive">
                                                 <Trash2 className="mr-2 h-4 w-4" />
                                                 Supprimer
                                             </DropdownMenuItem>
@@ -205,11 +212,13 @@ export default function QuizIndex({ quizzes, filters, can_create }: Props) {
 
                                 {/* Actions */}
                                 <div className="flex gap-2">
-                                    <Button size="sm" onClick={() => handleQuickAction('play', quiz.id)} className="flex-1">
-                                        <Play className="mr-2 h-4 w-4" />
-                                        Jouer
-                                    </Button>
-                                    <Button variant="outline" size="sm" onClick={() => handleQuickAction('edit', quiz.id)}>
+                                    {canPresentQuiz(quiz) && (
+                                        <Button size="sm" onClick={() => handleQuickAction('play', quiz)} className="flex-1 bg-green-600 hover:bg-green-700">
+                                            <Play className="mr-2 h-4 w-4" />
+                                            Présenter
+                                        </Button>
+                                    )}
+                                    <Button variant="outline" size="sm" onClick={() => handleQuickAction('edit', quiz)}>
                                         <Edit className="h-4 w-4" />
                                     </Button>
                                     <Button variant="outline" size="sm">
@@ -222,7 +231,7 @@ export default function QuizIndex({ quizzes, filters, can_create }: Props) {
                 </div>
 
                 {/* Empty State */}
-                {quizzes.data.length === 0 && (
+                {quizzes.length === 0 && (
                     <Card>
                         <CardContent className="py-12 text-center">
                             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
@@ -244,21 +253,6 @@ export default function QuizIndex({ quizzes, filters, can_create }: Props) {
                     </Card>
                 )}
 
-                {/* Pagination */}
-                {quizzes.last_page > 1 && (
-                    <div className="flex items-center justify-center gap-2">
-                        {Array.from({ length: quizzes.last_page }, (_, i) => i + 1).map((page) => (
-                            <Button
-                                key={page}
-                                variant={page === quizzes.current_page ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => get(`/quiz?page=${page}`)}
-                            >
-                                {page}
-                            </Button>
-                        ))}
-                    </div>
-                )}
             </div>
         </AppLayout>
     );

@@ -18,6 +18,19 @@ interface Tag {
     color: string;
 }
 
+interface Question {
+    text: string;
+    type: 'single' | 'multiple';
+    time_limit: number;
+    points: number;
+    answers: Answer[];
+}
+
+interface Answer {
+    text: string;
+    is_correct: boolean;
+}
+
 interface Props {
     tags?: Tag[];
 }
@@ -25,6 +38,7 @@ interface Props {
 export default function QuizCreate({ tags = [] }: Props) {
     const [selectedTags, setSelectedTags] = useState<number[]>([]);
     const [newTag, setNewTag] = useState('');
+    const [questions, setQuestions] = useState<Question[]>([]);
 
     const { data, setData, post, processing, errors } = useForm({
         title: '',
@@ -38,14 +52,61 @@ export default function QuizCreate({ tags = [] }: Props) {
         randomize_answers: false,
         allow_multiple_attempts: false,
         tags: [] as number[],
+        questions: [] as Question[],
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post('/quiz', {
+        post(route('quiz.store'), {
             ...data,
             tags: selectedTags,
+            questions: questions,
         });
+    };
+
+    const addQuestion = () => {
+        const newQuestion: Question = {
+            text: '',
+            type: 'single',
+            time_limit: data.time_per_question,
+            points: data.points_per_question,
+            answers: [
+                { text: '', is_correct: true },
+                { text: '', is_correct: false },
+            ],
+        };
+        setQuestions([...questions, newQuestion]);
+    };
+
+    const updateQuestion = (index: number, field: keyof Question, value: any) => {
+        const updatedQuestions = [...questions];
+        updatedQuestions[index] = { ...updatedQuestions[index], [field]: value };
+        setQuestions(updatedQuestions);
+    };
+
+    const addAnswer = (questionIndex: number) => {
+        const updatedQuestions = [...questions];
+        updatedQuestions[questionIndex].answers.push({ text: '', is_correct: false });
+        setQuestions(updatedQuestions);
+    };
+
+    const updateAnswer = (questionIndex: number, answerIndex: number, field: keyof Answer, value: any) => {
+        const updatedQuestions = [...questions];
+        updatedQuestions[questionIndex].answers[answerIndex] = {
+            ...updatedQuestions[questionIndex].answers[answerIndex],
+            [field]: value
+        };
+        setQuestions(updatedQuestions);
+    };
+
+    const removeQuestion = (index: number) => {
+        setQuestions(questions.filter((_, i) => i !== index));
+    };
+
+    const removeAnswer = (questionIndex: number, answerIndex: number) => {
+        const updatedQuestions = [...questions];
+        updatedQuestions[questionIndex].answers = updatedQuestions[questionIndex].answers.filter((_, i) => i !== answerIndex);
+        setQuestions(updatedQuestions);
     };
 
     const addTag = (tagId: number) => {
@@ -277,6 +338,141 @@ export default function QuizCreate({ tags = [] }: Props) {
                                     <Label htmlFor="allow_multiple_attempts">Autoriser plusieurs tentatives</Label>
                                 </div>
                             </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Questions */}
+                    <Card>
+                        <CardHeader>
+                            <div className="flex items-center justify-between">
+                                <CardTitle>Questions</CardTitle>
+                                <Button type="button" onClick={addQuestion} variant="outline" size="sm">
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Ajouter une question
+                                </Button>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            {questions.length === 0 ? (
+                                <div className="text-center py-8 text-muted-foreground">
+                                    Aucune question ajoutée. Cliquez sur "Ajouter une question" pour commencer.
+                                </div>
+                            ) : (
+                                questions.map((question, questionIndex) => (
+                                    <Card key={questionIndex} className="border-l-4 border-l-primary">
+                                        <CardHeader className="pb-3">
+                                            <div className="flex items-center justify-between">
+                                                <h4 className="font-medium">Question {questionIndex + 1}</h4>
+                                                <Button
+                                                    type="button"
+                                                    onClick={() => removeQuestion(questionIndex)}
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-destructive hover:text-destructive"
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent className="space-y-4">
+                                            <div>
+                                                <Label>Texte de la question</Label>
+                                                <Textarea
+                                                    value={question.text}
+                                                    onChange={(e) => updateQuestion(questionIndex, 'text', e.target.value)}
+                                                    placeholder="Saisissez votre question..."
+                                                    className="mt-1"
+                                                />
+                                            </div>
+
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <div>
+                                                    <Label>Type</Label>
+                                                    <Select
+                                                        value={question.type}
+                                                        onValueChange={(value) => updateQuestion(questionIndex, 'type', value)}
+                                                    >
+                                                        <SelectTrigger>
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="single">Choix unique</SelectItem>
+                                                            <SelectItem value="multiple">Choix multiple</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+
+                                                <div>
+                                                    <Label>Points</Label>
+                                                    <Input
+                                                        type="number"
+                                                        min="1"
+                                                        max="1000"
+                                                        value={question.points}
+                                                        onChange={(e) => updateQuestion(questionIndex, 'points', parseInt(e.target.value))}
+                                                    />
+                                                </div>
+
+                                                <div>
+                                                    <Label>Temps limite (s)</Label>
+                                                    <Input
+                                                        type="number"
+                                                        min="5"
+                                                        max="300"
+                                                        value={question.time_limit}
+                                                        onChange={(e) => updateQuestion(questionIndex, 'time_limit', parseInt(e.target.value))}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <Label>Réponses</Label>
+                                                    <Button
+                                                        type="button"
+                                                        onClick={() => addAnswer(questionIndex)}
+                                                        variant="outline"
+                                                        size="sm"
+                                                    >
+                                                        <Plus className="mr-2 h-4 w-4" />
+                                                        Ajouter une réponse
+                                                    </Button>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    {question.answers.map((answer, answerIndex) => (
+                                                        <div key={answerIndex} className="flex items-center gap-2">
+                                                            <Checkbox
+                                                                checked={answer.is_correct}
+                                                                onCheckedChange={(checked) => 
+                                                                    updateAnswer(questionIndex, answerIndex, 'is_correct', checked as boolean)
+                                                                }
+                                                            />
+                                                            <Input
+                                                                value={answer.text}
+                                                                onChange={(e) => updateAnswer(questionIndex, answerIndex, 'text', e.target.value)}
+                                                                placeholder={`Réponse ${answerIndex + 1}`}
+                                                                className="flex-1"
+                                                            />
+                                                            {question.answers.length > 2 && (
+                                                                <Button
+                                                                    type="button"
+                                                                    onClick={() => removeAnswer(questionIndex, answerIndex)}
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="text-destructive hover:text-destructive"
+                                                                >
+                                                                    <X className="h-4 w-4" />
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))
+                            )}
                         </CardContent>
                     </Card>
 

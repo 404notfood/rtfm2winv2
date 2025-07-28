@@ -35,17 +35,17 @@ interface UserStats {
 interface Props {
     achievements: Achievement[];
     userStats: UserStats;
-    filters: {
+    filters?: {
         search?: string;
         category?: string;
         status?: string;
     };
 }
 
-export default function AchievementsIndex({ achievements, userStats, filters }: Props) {
-    const [search, setSearch] = useState(filters.search || '');
-    const [selectedCategory, setSelectedCategory] = useState(filters.category || 'all');
-    const [selectedStatus, setSelectedStatus] = useState(filters.status || 'all');
+export default function AchievementsIndex({ achievements, userStats, filters = {} }: Props) {
+    const [search, setSearch] = useState(filters?.search || '');
+    const [selectedCategory, setSelectedCategory] = useState(filters?.category || 'all');
+    const [selectedStatus, setSelectedStatus] = useState(filters?.status || 'all');
     const { get } = useForm();
 
     const handleFilter = () => {

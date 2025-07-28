@@ -28,7 +28,7 @@ class TournamentController extends Controller
         $tournaments = Tournament::query()
             ->when(!$user->isAdmin(), function ($query) use ($user) {
                 $query->where('creator_id', $user->id)
-                    ->orWhere('is_public', true);
+                    ->orWhereIn('status', ['registration', 'active', 'completed']);
             })
             ->with(['creator', 'quiz'])
             ->withCount('participants')
@@ -37,6 +37,8 @@ class TournamentController extends Controller
 
         return Inertia::render('tournaments/index', [
             'tournaments' => $tournaments,
+            'filters' => request()->only(['search', 'status']),
+            'can_create' => $user && in_array($user->role, ['presenter', 'admin']),
         ]);
     }
 

@@ -37,8 +37,16 @@ class StoreQuizRequest extends FormRequest
             'randomize_questions' => 'boolean',
             'randomize_answers' => 'boolean',
             'allow_multiple_attempts' => 'boolean',
-            'tags' => 'array',
-            'tags.*' => 'integer|exists:tags,id',
+            'tags' => 'nullable|array',
+            'tags.*' => 'integer',
+            'questions' => 'required|array|min:1',
+            'questions.*.text' => 'required|string|max:500',
+            'questions.*.type' => 'required|in:single,multiple',
+            'questions.*.time_limit' => 'required|integer|min:5|max:300',
+            'questions.*.points' => 'required|integer|min:1|max:1000',
+            'questions.*.answers' => 'required|array|min:2',
+            'questions.*.answers.*.text' => 'required|string|max:200',
+            'questions.*.answers.*.is_correct' => 'required|boolean',
         ];
     }
 

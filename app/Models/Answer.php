@@ -11,9 +11,12 @@ class Answer extends Model
 {
     use HasFactory;
 
+    public $timestamps = false; // Disable automatic timestamps since table only has created_at
+
     protected $fillable = [
         'question_id',
         'answer_text',
+        'text', // Alias pour answer_text
         'is_correct',
         'explanation',
     ];
@@ -21,6 +24,16 @@ class Answer extends Model
     protected $casts = [
         'is_correct' => 'boolean',
     ];
+
+    protected $appends = ['text'];
+
+    /**
+     * Get the text attribute (alias for answer_text).
+     */
+    public function getTextAttribute(): string
+    {
+        return $this->answer_text;
+    }
 
     /**
      * Get the question that owns this answer.

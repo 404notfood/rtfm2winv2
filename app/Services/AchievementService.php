@@ -18,6 +18,12 @@ class AchievementService
     public function calculateProgress(User $user, Achievement $achievement): int
     {
         $requirements = $achievement->requirements;
+        
+        // Ensure requirements is an array (handle cases where it might be stored as JSON string)
+        if (is_string($requirements)) {
+            $requirements = json_decode($requirements, true) ?? [];
+        }
+        
         $slug = $achievement->slug;
         
         // Handle different achievement types

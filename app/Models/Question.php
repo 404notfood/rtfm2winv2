@@ -33,6 +33,24 @@ class Question extends Model
         'updated_at' => 'datetime',
     ];
 
+    protected $appends = ['text', 'type'];
+
+    /**
+     * Get the text attribute (alias for question_text).
+     */
+    public function getTextAttribute(): string
+    {
+        return $this->question_text;
+    }
+
+    /**
+     * Get the type attribute (single or multiple based on multiple_answers).
+     */
+    public function getTypeAttribute(): string
+    {
+        return $this->multiple_answers ? 'multiple' : 'single';
+    }
+
     /**
      * Get the quiz that owns this question.
      */

@@ -36,6 +36,41 @@ class QuizSessionController extends Controller
         $this->scoringService = $scoringService;
         $this->qrCodeService = $qrCodeService;
     }
+
+    /**
+     * Display active quiz sessions that participants can join.
+     */
+    public function activeSessions(): Response
+    {
+        $activeSessions = QuizSession::with(['quiz:id,title,description,creator_id', 'quiz.creator:id,name'])
+            ->whereIn('status', ['waiting', 'active'])
+            ->where('created_at', '>', now()->subHours(3)) // Only recent sessions
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function($session) {
+                return [
+                    'id' => $session->id,
+                    'code' => $session->code,
+                    'status' => $session->status,
+                    'participants_count' => $session->participants()->count(),
+                    'max_participants' => $session->max_participants,
+                    'created_at' => $session->created_at,
+                    'quiz' => [
+                        'id' => $session->quiz->id,
+                        'title' => $session->quiz->title,
+                        'description' => $session->quiz->description,
+                        'creator' => [
+                            'id' => $session->quiz->creator->id,
+                            'name' => $session->quiz->creator->name,
+                        ]
+                    ]
+                ];
+            });
+
+        return Inertia::render('sessions/active', [
+            'sessions' => $activeSessions,
+        ]);
+    }
     /**
      * Create a new quiz session.
      */

@@ -38,13 +38,14 @@ class QuizController extends Controller
                 ->get()
             : Quiz::with(['creator:id,name,avatar', 'tags'])
                 ->withCount(['questions', 'sessions'])
-                ->where('status', 'published')
+                ->where('status', 'active')
                 ->latest()
                 ->get();
         
         return Inertia::render('quiz/index', [
             'quizzes' => $quizzes,
-            'canCreate' => $user && in_array($user->role, ['presenter', 'admin']),
+            'filters' => $request->only(['search', 'tag', 'status']),
+            'can_create' => $user && in_array($user->role, ['presenter', 'admin']),
         ]);
     }
 
@@ -83,14 +84,26 @@ class QuizController extends Controller
     public function store(StoreQuizRequest $request): RedirectResponse
     {
         try {
+            // Debug: Log les données reçues
+            \Log::info('Quiz creation attempt', [
+                'data' => $request->validated(),
+                'user' => $request->user()->id
+            ]);
+            
             // La validation est déjà effectuée par StoreQuizRequest
             // Utilisation du service pour créer le quiz (principe de responsabilité unique)
             $quiz = $this->quizService->createQuiz($request->validated(), $request->user());
             
+            \Log::info('Quiz created successfully', ['quiz_id' => $quiz->id]);
+            
             return redirect()->route('quiz.show', $quiz->id)
                 ->with('success', 'Quiz créé avec succès !');
         } catch (\Exception $e) {
-            return back()->withErrors(['error' => 'Erreur lors de la création du quiz.']);
+            \Log::error('Quiz creation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->withErrors(['error' => 'Erreur lors de la création du quiz: ' . $e->getMessage()]);
         }
     }
 
@@ -107,8 +120,7 @@ class QuizController extends Controller
                           ->withCount('participants')
                           ->latest();
                 },
-                'tags',
-                'achievements'
+                'tags'
             ])
             ->withCount(['questions', 'sessions', 'participants'])
             ->where('id', $id)
@@ -137,7 +149,7 @@ class QuizController extends Controller
      */
     public function edit(string $id): Response
     {
-        $quiz = Quiz::with(['questions.answers'])
+        $quiz = Quiz::with(['questions.answers', 'tags'])
             ->where('id', $id)
             ->firstOrFail();
         
@@ -147,8 +159,25 @@ class QuizController extends Controller
             abort(403, 'Vous n\'êtes pas autorisé à modifier ce quiz.');
         }
         
+        // Get available tags
+        try {
+            $tags = \App\Models\Tag::orderBy('name')
+                ->get(['id', 'name', 'color'])
+                ->map(function($tag) {
+                    return [
+                        'id' => $tag->id,
+                        'name' => $tag->name,
+                        'color' => $tag->color ?? '#3B82F6',
+                    ];
+                });
+        } catch (\Exception $e) {
+            // If tags table doesn't exist yet, provide empty array
+            $tags = collect([]);
+        }
+        
         return Inertia::render('quiz/edit', [
             'quiz' => $quiz,
+            'tags' => $tags,
             'categories' => ['général', 'science', 'histoire', 'sport', 'culture'],
         ]);
     }
@@ -171,20 +200,14 @@ class QuizController extends Controller
             'description' => 'nullable|string|max:500',
             'category' => 'nullable|string|max:50',
             'time_per_question' => 'integer|min:5|max:300',
+            'base_points' => 'integer|min:100|max:5000',
             'multiple_answers' => 'boolean',
-            'status' => 'in:draft,published,archived',
-            'questions' => 'required|array|min:1',
-            'questions.*.text' => 'required|string|max:500',
-            'questions.*.type' => 'required|in:single,multiple',
-            'questions.*.time_limit' => 'integer|min:5|max:300',
-            'questions.*.points' => 'integer|min:1|max:1000',
-            'questions.*.answers' => 'required|array|min:2',
-            'questions.*.answers.*.text' => 'required|string|max:200',
-            'questions.*.answers.*.is_correct' => 'boolean',
+            'allow_anonymous' => 'boolean',
+            'status' => 'in:draft,active,archived',
         ]);
 
         try {
-            $quiz = $this->quizService->updateQuiz($quiz, $validated);
+            $quiz->update($validated);
             
             return redirect()->route('quiz.show', $id)
                 ->with('success', 'Quiz mis à jour avec succès !');
@@ -262,6 +285,133 @@ class QuizController extends Controller
             return back()->with('success', 'Nouveau lien généré !');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Erreur lors de la génération du lien.']);
+        }
+    }
+
+    /**
+     * Display quiz analytics.
+     */
+    public function analytics(string $id): Response
+    {
+        $quiz = Quiz::with([
+                'sessions' => function($query) {
+                    $query->with(['participants'])
+                          ->withCount('participants')
+                          ->orderBy('created_at', 'desc');
+                },
+                'questions'
+            ])
+            ->withCount(['sessions', 'participants'])
+            ->findOrFail($id);
+        
+        // Check if user can view analytics
+        $user = request()->user();
+        if ($quiz->creator_id !== $user?->id && $user?->role !== 'admin') {
+            abort(403, 'Vous n\'êtes pas autorisé à voir les analytics de ce quiz.');
+        }
+        
+        // Calculate analytics
+        $totalParticipants = $quiz->participants_count;
+        $totalSessions = $quiz->sessions_count;
+        $averageParticipantsPerSession = $totalSessions > 0 ? round($totalParticipants / $totalSessions, 1) : 0;
+        
+        // Recent sessions
+        $recentSessions = $quiz->sessions->take(10);
+        
+        // Performance by question (if we have session data)
+        $questionStats = [];
+        foreach ($quiz->questions as $question) {
+            $questionStats[] = [
+                'id' => $question->id,
+                'text' => $question->question_text,
+                'order_index' => $question->order_index,
+                // TODO: Add actual statistics when participant answers are tracked
+                'correct_answers' => 0,
+                'total_answers' => 0,
+                'accuracy' => 0
+            ];
+        }
+        
+        return Inertia::render('quiz/analytics', [
+            'quiz' => $quiz,
+            'analytics' => [
+                'total_participants' => $totalParticipants,
+                'total_sessions' => $totalSessions,
+                'average_participants_per_session' => $averageParticipantsPerSession,
+                'question_stats' => $questionStats,
+                'recent_sessions' => $recentSessions
+            ]
+        ]);
+    }
+
+    /**
+     * Start presenting a quiz (for presenters only).
+     */
+    public function play(string $id): RedirectResponse
+    {
+        \Log::info('QuizController::play called', ['quiz_id' => $id]);
+        
+        $quiz = Quiz::with('questions')->findOrFail($id);
+        $user = request()->user();
+        
+        // Check if user is the presenter of this quiz or admin
+        if ($quiz->creator_id !== $user?->id && $user?->role !== 'admin') {
+            return back()->withErrors(['error' => 'Seul le créateur du quiz peut lancer une présentation.']);
+        }
+        
+        // Check if quiz is ready for presentation
+        if ($quiz->status !== 'active') {
+            \Log::warning('Quiz not active', ['quiz_id' => $id, 'status' => $quiz->status]);
+            return back()->withErrors(['error' => 'Ce quiz n\'est pas publié. Changez son statut à "Actif" pour pouvoir le présenter.']);
+        }
+        
+        if ($quiz->questions->isEmpty()) {
+            \Log::warning('Quiz has no questions', ['quiz_id' => $id]);
+            return back()->withErrors(['error' => 'Ce quiz n\'a pas encore de questions. Ajoutez des questions avant de pouvoir le présenter.']);
+        }
+        
+        // Look for an existing waiting session from this presenter
+        $existingSession = $quiz->sessions()
+            ->where('status', 'waiting')
+            ->where('presenter_id', $user->id)
+            ->where('created_at', '>', now()->subHours(2)) // Sessions older than 2h are considered expired
+            ->first();
+            
+        if ($existingSession) {
+            \Log::info('Found existing session', ['session_code' => $existingSession->code]);
+            // Return to existing presentation session
+            return redirect()->route('quiz.session.waiting-room', $existingSession->code);
+        }
+        
+        // Create new presentation session
+        try {
+            $sessionCode = strtoupper(Str::random(6));
+            
+            \Log::info('Creating new presentation session', ['quiz_id' => $id, 'code' => $sessionCode]);
+            
+            $session = $quiz->sessions()->create([
+                'code' => $sessionCode,
+                'status' => 'waiting',
+                'presenter_id' => $user->id,
+                'current_question_index' => 0,
+                'settings' => [
+                    'time_per_question' => $quiz->time_per_question ?? 30,
+                    'show_correct_answer' => true,
+                    'allow_anonymous' => $quiz->allow_anonymous ?? true,
+                ],
+            ]);
+            
+            \Log::info('Presentation session created successfully', ['session_id' => $session->id, 'code' => $session->code]);
+            
+            return redirect()->route('quiz.session.waiting-room', $session->code);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error creating presentation session', [
+                'quiz_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->withErrors(['error' => 'Erreur lors de la création de la session de présentation: ' . $e->getMessage()]);
         }
     }
 }
