@@ -257,5 +257,50 @@ Route::prefix('api')->middleware('auth')->group(function () {
     Route::get('/dashboard/activity', [DashboardController::class, 'activity'])->name('api.dashboard.activity');
 });
 
+// Pages de support et légales
+Route::get('/categories', function () {
+    return Inertia::render('categories/index', [
+        'categories' => ['général', 'science', 'histoire', 'sport', 'culture'],
+    ]);
+})->name('categories');
+
+Route::get('/templates', function () {
+    return Inertia::render('templates/index', [
+        'templates' => [],
+    ]);
+})->name('templates');
+
+Route::get('/help', function () {
+    return Inertia::render('support/help');
+})->name('help');
+
+Route::get('/contact', function () {
+    return Inertia::render('support/contact');
+})->name('contact');
+
+Route::get('/docs', function () {
+    return Inertia::render('support/docs');
+})->name('docs');
+
+Route::get('/community', function () {
+    return Inertia::render('support/community');
+})->name('community');
+
+Route::get('/privacy', function () {
+    return Inertia::render('legal/privacy');
+})->name('privacy');
+
+Route::get('/terms', function () {
+    return Inertia::render('legal/terms');
+})->name('terms');
+
+Route::get('/cookies', function () {
+    return Inertia::render('legal/cookies');
+})->name('cookies');
+
+Route::get('/security', function () {
+    return Inertia::render('legal/security');
+})->name('security');
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

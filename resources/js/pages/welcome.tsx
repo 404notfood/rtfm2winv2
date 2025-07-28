@@ -590,7 +590,7 @@ const Footer = () => {
                     {/* Section Copyright - Centrée */}
                     <div className="flex w-full flex-col items-center space-y-6 border-t pt-8">
                         <p className="text-center text-muted-foreground">
-                            © {new Date().getFullYear()} RTFM2Win. Tous droits réservés. Fait avec ❤️ en France.
+                            © {new Date().getFullYear()} <a href="https://404notfood.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">404NotFood</a>. Tous droits réservés. Fait avec ❤️ pour vous les apprentis dev.
                         </p>
                     </div>
                 </div>

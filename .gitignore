@@ -217,3 +217,39 @@ out
 .fusebox/
 .dynamodb/
 .tern-port
+
+# Claude Code AI et fichiers de développement personnel
+/.claude/
+.claude/
+*.claude
+CLAUDE.md
+
+# Fichiers de test et développement personnel
+test-route.php
+check_quiz_table.php
+debug*.php
+temp*.php
+sandbox*.php
+
+# Configurations de développement avec codes personnels
+.env.production
+.env.backup
+.env.*.backup
+deploy.sh.backup
+composer.auth.json
+
+# Certificats SSL et clés privées
+nginx*.conf
+reverb-ssl.conf
+laragon-nginx-reverb.conf
+setup-https.*
+*.pem
+*.key
+*.crt
+
+# Fichiers de déploiement avec informations sensibles
+deploy.sh
+DEPLOYMENT.md
+INSTALL*.md
+
+/.CLAUDE
