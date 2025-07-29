@@ -13,14 +13,8 @@ class Trophy extends Model
         'name',
         'description',
         'icon',
-        'type',
-        'tier',
+        'level',
         'requirements',
-        'slug',
-        'is_active',
-        'rarity',
-        'category',
-        'points'
     ];
 
     protected $casts = [

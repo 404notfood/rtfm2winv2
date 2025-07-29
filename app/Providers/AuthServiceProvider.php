@@ -3,7 +3,11 @@
 namespace App\Providers;
 
 use App\Models\Quiz;
+use App\Models\Tournament;
+use App\Models\BattleRoyaleSession;
 use App\Policies\QuizPolicy;
+use App\Policies\TournamentPolicy;
+use App\Policies\BattleRoyalePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -15,6 +19,8 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Quiz::class => QuizPolicy::class,
+        Tournament::class => TournamentPolicy::class,
+        BattleRoyaleSession::class => BattleRoyalePolicy::class,
     ];
 
     /**

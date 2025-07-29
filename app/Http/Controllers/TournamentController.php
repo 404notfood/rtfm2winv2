@@ -40,10 +40,25 @@ class TournamentController extends Controller
             ->latest()
             ->paginate(12);
 
+        // Get user's tournaments if authenticated
+        $userTournaments = [];
+        if ($user) {
+            $userTournaments = Tournament::where('creator_id', $user->id)
+                ->orWhereHas('participants', function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
+                ->with(['creator', 'quiz'])
+                ->withCount('participants')
+                ->latest()
+                ->take(5)
+                ->get();
+        }
+
         return Inertia::render('tournaments/index', [
             'tournaments' => $tournaments,
             'filters' => request()->only(['search', 'status']),
             'can_create' => $user && in_array($user->role, ['presenter', 'admin']),
+            'user_tournaments' => $userTournaments,
         ]);
     }
 

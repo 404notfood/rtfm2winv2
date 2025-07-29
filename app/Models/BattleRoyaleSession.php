@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 class BattleRoyaleSession extends Model
@@ -13,12 +14,15 @@ class BattleRoyaleSession extends Model
 
     protected $fillable = [
         'name',
+        'description',
         'max_players',
         'elimination_interval',
         'status',
         'current_round',
         'started_at',
         'ended_at',
+        'creator_id',
+        'quiz_pool',
     ];
 
     protected $casts = [
@@ -27,6 +31,7 @@ class BattleRoyaleSession extends Model
         'current_round' => 'integer',
         'started_at' => 'datetime',
         'ended_at' => 'datetime',
+        'quiz_pool' => 'array',
     ];
 
     protected static function boot()
@@ -36,6 +41,14 @@ class BattleRoyaleSession extends Model
         static::creating(function ($session) {
             $session->current_round = 1;
         });
+    }
+
+    /**
+     * Get the creator of this Battle Royale session.
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'creator_id');
     }
 
     /**

@@ -6,7 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AppLayout } from '@/layouts/app-layout';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, router } from '@inertiajs/react';
 import { Calendar, Clock, Eye, MoreHorizontal, Play, Plus, Search, Target, Trophy, Users, Zap } from 'lucide-react';
 import { useState } from 'react';
 
@@ -57,7 +57,7 @@ interface Props {
         type?: string;
     };
     can_create: boolean;
-    user_tournaments: Tournament[];
+    user_tournaments?: Tournament[];
 }
 
 export default function TournamentsIndex({ tournaments, filters = {}, can_create, user_tournaments }: Props) {
@@ -66,19 +66,21 @@ export default function TournamentsIndex({ tournaments, filters = {}, can_create
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        get('/tournaments', {
+        router.get('/tournaments', {
             search,
             status: filters.status,
             type: filters.type,
+        }, {
             preserveState: true,
             preserveScroll: true,
         });
     };
 
     const handleFilter = (key: string, value: string) => {
-        get('/tournaments', {
+        router.get('/tournaments', {
             search,
             [key]: value,
+        }, {
             preserveState: true,
             preserveScroll: true,
         });
@@ -156,7 +158,7 @@ export default function TournamentsIndex({ tournaments, filters = {}, can_create
                 </div>
 
                 {/* My Tournaments */}
-                {user_tournaments.length > 0 && (
+                {user_tournaments && user_tournaments.length > 0 && (
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -166,7 +168,7 @@ export default function TournamentsIndex({ tournaments, filters = {}, can_create
                         </CardHeader>
                         <CardContent>
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                {user_tournaments.slice(0, 3).map((tournament) => (
+                                {user_tournaments?.slice(0, 3).map((tournament) => (
                                     <Card key={tournament.id} className="border-l-4 border-l-blue-500">
                                         <CardContent className="p-4">
                                             <div className="mb-2 flex items-center justify-between">
@@ -211,23 +213,23 @@ export default function TournamentsIndex({ tournaments, filters = {}, can_create
                             <div className="flex-1">
                                 <Input placeholder="Rechercher des tournois..." value={search} onChange={(e) => setSearch(e.target.value)} />
                             </div>
-                            <Select value={filters.status || ''} onValueChange={(value) => handleFilter('status', value)}>
+                            <Select value={filters.status || 'all'} onValueChange={(value) => handleFilter('status', value === 'all' ? '' : value)}>
                                 <SelectTrigger className="w-40">
                                     <SelectValue placeholder="Statut" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">Tous les statuts</SelectItem>
+                                    <SelectItem value="all">Tous les statuts</SelectItem>
                                     <SelectItem value="upcoming">À venir</SelectItem>
                                     <SelectItem value="active">En cours</SelectItem>
                                     <SelectItem value="completed">Terminés</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <Select value={filters.type || ''} onValueChange={(value) => handleFilter('type', value)}>
+                            <Select value={filters.type || 'all'} onValueChange={(value) => handleFilter('type', value === 'all' ? '' : value)}>
                                 <SelectTrigger className="w-40">
                                     <SelectValue placeholder="Type" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">Tous les types</SelectItem>
+                                    <SelectItem value="all">Tous les types</SelectItem>
                                     <SelectItem value="single_elimination">Élimination simple</SelectItem>
                                     <SelectItem value="double_elimination">Élimination double</SelectItem>
                                     <SelectItem value="round_robin">Round Robin</SelectItem>
@@ -430,7 +432,7 @@ export default function TournamentsIndex({ tournaments, filters = {}, can_create
                                 key={page}
                                 variant={page === tournaments.current_page ? 'default' : 'outline'}
                                 size="sm"
-                                onClick={() => get(`/tournaments?page=${page}`)}
+                                onClick={() => router.get(`/tournaments?page=${page}`)}
                             >
                                 {page}
                             </Button>

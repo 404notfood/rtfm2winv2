@@ -12,12 +12,17 @@ import { Input } from '@/components/ui/input';
 // Icons
 import { ArrowRight, BarChart3, Brain, Gamepad2, Menu, Monitor, Play, Sparkles, Target, Users, X, Zap } from 'lucide-react';
 
+// Auth Sidebar
+import AuthSidebar from '@/components/auth-sidebar';
+
 
 // Composant Header
 const Header = () => {
     const { auth } = usePage<SharedData>().props;
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
+    const [authModalOpen, setAuthModalOpen] = useState(false);
+    const [authModalMode, setAuthModalMode] = useState<'login' | 'register'>('login');
 
     useEffect(() => {
         const handleScroll = () => {
@@ -39,8 +44,12 @@ const Header = () => {
                     {/* Logo section */}
                     <Link href="/" className="group flex items-center space-x-3">
                         <div className="relative">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-secondary text-lg font-bold text-white">
-                                R
+                            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl overflow-hidden">
+                                <img 
+                                    src="/img/logo4.png" 
+                                    alt="RTFM2Win Logo" 
+                                    className="w-full h-full object-cover rounded-xl"
+                                />
                             </div>
                             <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-primary/20 to-secondary/20 opacity-0 blur transition-opacity group-hover:opacity-100"></div>
                         </div>
@@ -85,18 +94,24 @@ const Header = () => {
                                 </Button>
                             ) : (
                                 <>
-                                    <Button variant="ghost" asChild className="h-10 px-5 py-2 hover:bg-muted/50">
-                                        <Link href="/login">
-                                            <span className="text-sm">Connexion</span>
-                                        </Link>
+                                    <Button 
+                                        variant="ghost" 
+                                        className="h-10 px-5 py-2 hover:bg-muted/50"
+                                        onClick={() => {
+                                            setAuthModalMode('login');
+                                            setAuthModalOpen(true);
+                                        }}
+                                    >
+                                        <span className="text-sm">Connexion</span>
                                     </Button>
                                     <Button
-                                        asChild
                                         className="h-10 bg-gradient-to-r from-primary to-secondary px-6 py-2 text-white shadow-md hover:from-primary/90 hover:to-secondary/90 hover:shadow-lg"
+                                        onClick={() => {
+                                            setAuthModalMode('register');
+                                            setAuthModalOpen(true);
+                                        }}
                                     >
-                                        <Link href="/register">
-                                            <span className="text-sm font-medium">Inscription</span>
-                                        </Link>
+                                        <span className="text-sm font-medium">Inscription</span>
                                     </Button>
                                 </>
                             )}
@@ -155,6 +170,13 @@ const Header = () => {
                     </motion.div>
                 )}
             </div>
+
+            {/* Auth Sidebar */}
+            <AuthSidebar 
+                isOpen={authModalOpen} 
+                onClose={() => setAuthModalOpen(false)}
+                initialMode={authModalMode}
+            />
         </header>
     );
 };
@@ -590,7 +612,7 @@ const Footer = () => {
                     {/* Section Copyright - Centrée */}
                     <div className="flex w-full flex-col items-center space-y-6 border-t pt-8">
                         <p className="text-center text-muted-foreground">
-                            © {new Date().getFullYear()} <a href="https://404notfood.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">404NotFood</a>. Tous droits réservés. Fait avec ❤️ pour vous les apprentis dev.
+                            © {new Date().getFullYear()} <a href="https://404notfood.fr" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">404NotFood</a>. Tous droits réservés. Fait avec ❤️ pour vous les apprentis dev.
                         </p>
                     </div>
                 </div>

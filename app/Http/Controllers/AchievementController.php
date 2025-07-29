@@ -122,8 +122,8 @@ class AchievementController extends Controller
                     'name' => $trophy->name,
                     'description' => $trophy->description,
                     'icon' => $trophy->icon,
-                    'type' => $trophy->type,
-                    'tier' => $trophy->tier,
+                    'type' => $trophy->type ?? $trophy->level,
+                    'tier' => $trophy->level,
                 ];
             });
         } catch (\Exception $e) {
@@ -273,7 +273,7 @@ class AchievementController extends Controller
         // Load user trophies
         $userTrophyIds = $user->trophies ?? [];
         $trophies = Trophy::whereIn('id', $userTrophyIds)
-            ->orderBy('tier', 'desc')
+            ->orderBy('level', 'desc')
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(function($trophy) {
@@ -282,8 +282,8 @@ class AchievementController extends Controller
                     'name' => $trophy->name,
                     'description' => $trophy->description,
                     'icon' => $trophy->icon,
-                    'type' => $trophy->type,
-                    'tier' => $trophy->tier,
+                    'type' => $trophy->type ?? $trophy->level,
+                    'tier' => $trophy->level,
                     'requirements' => $trophy->requirements,
                 ];
             });
@@ -301,6 +301,7 @@ class AchievementController extends Controller
                 'gold_trophies' => $trophies->where('tier', 'gold')->count(),
                 'silver_trophies' => $trophies->where('tier', 'silver')->count(),
                 'bronze_trophies' => $trophies->where('tier', 'bronze')->count(),
+                'platinum_trophies' => $trophies->where('tier', 'platinum')->count(),
             ],
         ]);
     }

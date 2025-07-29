@@ -16,23 +16,15 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 // Setup CSRF token from meta tag
 const token = document.head.querySelector('meta[name="csrf-token"]');
 if (token) {
-    window.axios.defaults.headers.common['X-CSRF-TOKEN'] = token.getAttribute('content');
-    // Also set up for Inertia requests
     const csrfToken = token.getAttribute('content');
+    window.axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+    
+    // Set default headers for all request types
     if (csrfToken) {
-        // Set CSRF token for all form requests
-        document.addEventListener('DOMContentLoaded', () => {
-            const forms = document.querySelectorAll('form');
-            forms.forEach((form) => {
-                if (!form.querySelector('input[name="_token"]')) {
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = '_token';
-                    input.value = csrfToken;
-                    form.appendChild(input);
-                }
-            });
-        });
+        window.axios.defaults.headers.post['X-CSRF-TOKEN'] = csrfToken;
+        window.axios.defaults.headers.put['X-CSRF-TOKEN'] = csrfToken;
+        window.axios.defaults.headers.patch['X-CSRF-TOKEN'] = csrfToken;
+        window.axios.defaults.headers.delete['X-CSRF-TOKEN'] = csrfToken;
     }
 } else {
     console.error('CSRF token not found: https://laravel.com/docs/csrf#csrf-x-csrf-token');
@@ -41,32 +33,29 @@ if (token) {
 // Configure Laravel Echo for WebSocket broadcasting
 window.Pusher = Pusher;
 
-// Configuration Echo simplifiée pour production
-if (import.meta.env.VITE_PUSHER_APP_KEY) {
+// Configuration Echo simplifiée
+if (import.meta.env.VITE_REVERB_APP_KEY) {
     window.Echo = new Echo({
-        broadcaster: 'pusher',
-        key: import.meta.env.VITE_PUSHER_APP_KEY,
-        cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER || 'eu',
-        forceTLS: true,
+        broadcaster: 'reverb',
+        key: import.meta.env.VITE_REVERB_APP_KEY,
+        wsHost: import.meta.env.VITE_REVERB_HOST,
+        wsPort: import.meta.env.VITE_REVERB_PORT ?? 80,
+        wssPort: import.meta.env.VITE_REVERB_PORT ?? 443,
+        forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
         enabledTransports: ['ws', 'wss'],
-        authEndpoint: '/broadcasting/auth',
-        auth: {
-            headers: {
-                'X-CSRF-TOKEN': token?.getAttribute('content') || '',
-            },
-        },
-    });
-} else {
-    console.error('VITE_PUSHER_APP_KEY is not defined!');
+    }) as any; // Cast pour éviter le conflit de types avec CustomEcho
 }
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
-    title: (title) => (title ? `${title} - ${appName}` : appName),
+    title: (title) => `${title} - ${appName}`,
     resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
     setup({ el, App, props }) {
         const root = createRoot(el);
+
+        // Initialize theme before rendering
+        initializeTheme();
 
         root.render(
             <>
@@ -79,6 +68,3 @@ createInertiaApp({
         color: '#4B5563',
     },
 });
-
-// This will set light / dark mode on load...
-initializeTheme();

@@ -21,11 +21,12 @@ use Inertia\Response;
 
 class BattleRoyaleController extends Controller
 {
-    protected BattleRoyaleService $battleRoyaleService;
+    protected ?BattleRoyaleService $battleRoyaleService = null;
 
-    public function __construct(BattleRoyaleService $battleRoyaleService)
+    public function __construct()
     {
-        $this->battleRoyaleService = $battleRoyaleService;
+        // Temporairement désactivé pour debug
+        // $this->battleRoyaleService = $battleRoyaleService;
     }
     /**
      * Display Battle Royale lobby.
@@ -34,7 +35,7 @@ class BattleRoyaleController extends Controller
     {
         $activeSessions = BattleRoyaleSession::where('status', 'waiting')
             ->orWhere('status', 'active')
-            ->with('participants')
+            ->with(['participants', 'creator:id,name'])
             ->get()
             ->map(function($session) {
                 return [
@@ -47,6 +48,11 @@ class BattleRoyaleController extends Controller
                     'current_round' => $session->current_round,
                     'can_join' => $session->status === 'waiting' && !$session->isFull(),
                     'join_url' => route('battle-royale.join', $session->id),
+                    'creator' => $session->creator ? [
+                        'id' => $session->creator->id,
+                        'name' => $session->creator->name,
+                    ] : null,
+                    'created_at' => $session->created_at,
                 ];
             });
         
@@ -88,7 +94,61 @@ class BattleRoyaleController extends Controller
      */
     public function create(): Response
     {
+        \Log::info('BattleRoyale Create - Method called');
+        $user = auth()->user();
+        
+        // Vérifier que l'utilisateur est connecté et autorisé
+        if (!$user || !in_array($user->role, ['presenter', 'admin'])) {
+            abort(403, 'Non autorisé à créer un Battle Royale');
+        }
+        
+        // Debug: Log pour identifier le problème
+        \Log::info('BattleRoyale Create - User role: ' . $user->role);
+        \Log::info('BattleRoyale Create - Is admin: ' . ($user->isAdmin() ? 'true' : 'false'));
+        
+        try {
+            // Les admins peuvent voir tous les quiz, les autres seulement leurs quiz
+            if ($user->isAdmin()) {
+                \Log::info('BattleRoyale Create - Loading quizzes for admin');
+                $quizzes = Quiz::where('is_active', true)
+                    ->withCount('questions')
+                    ->with('creator:id,name')
+                    ->get()
+                    ->map(function($quiz) {
+                        return [
+                            'id' => $quiz->id,
+                            'title' => $quiz->title,
+                            'creator_id' => $quiz->creator_id,
+                            'questions_count' => $quiz->questions_count,
+                            'creator' => $quiz->creator ? [
+                                'id' => $quiz->creator->id,
+                                'name' => $quiz->creator->name,
+                            ] : null,
+                        ];
+                    });
+                \Log::info('BattleRoyale Create - Found ' . $quizzes->count() . ' quizzes for admin');
+            } else {
+                \Log::info('BattleRoyale Create - Loading quizzes for user');
+                $quizzes = $user->quizzes()
+                    ->where('is_active', true)
+                    ->withCount('questions')
+                    ->get()
+                    ->map(function($quiz) {
+                        return [
+                            'id' => $quiz->id,
+                            'title' => $quiz->title,
+                            'questions_count' => $quiz->questions_count,
+                        ];
+                    });
+                \Log::info('BattleRoyale Create - Found ' . $quizzes->count() . ' quizzes for user');
+            }
+        } catch (\Exception $e) {
+            \Log::error('BattleRoyale Create - Error loading quizzes: ' . $e->getMessage());
+            $quizzes = collect([]);
+        }
+
         return Inertia::render('battle-royale/create', [
+            'quizzes' => $quizzes,
             'defaultSettings' => [
                 'max_players' => 20,
                 'elimination_interval' => 30, // seconds
@@ -102,24 +162,37 @@ class BattleRoyaleController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        $this->authorize('create', BattleRoyaleSession::class);
+
+        // Debug: logger les données reçues
+        \Log::info('Battle Royale Store - Données reçues:', $request->all());
+
         $validated = $request->validate([
-            'name' => 'required|string|max:100',
-            'max_players' => 'required|integer|min:4|max:100',
-            'elimination_interval' => 'required|integer|min:10|max:120',
-            'quiz_pool' => 'required|array|min:1', // IDs des quiz à utiliser
+            'title' => 'required|string|max:100',
+            'description' => 'nullable|string|max:500',
+            'quiz_id' => 'required|exists:quizzes,id',
+            'max_participants' => 'required|integer|min:4|max:100',
+            'elimination_rate' => 'required|integer|min:10|max:50',
+            'time_per_question' => 'required|integer|min:10|max:120',
+            'prize_pool' => 'nullable|numeric|min:0',
+            'is_public' => 'boolean',
         ]);
 
         $user = $request->user();
         
+        // Debug: logger les données validées
+        \Log::info('Battle Royale Store - Données validées:', $validated);
+        
         DB::beginTransaction();
         try {
             $session = BattleRoyaleSession::create([
-                'name' => $validated['name'],
-                'max_players' => $validated['max_players'],
-                'elimination_interval' => $validated['elimination_interval'],
+                'name' => $validated['title'],
+                'description' => $validated['description'],
+                'max_players' => $validated['max_participants'],
+                'elimination_interval' => $validated['time_per_question'],
                 'status' => 'waiting',
                 'creator_id' => $user?->id,
-                'quiz_pool' => $validated['quiz_pool'],
+                'quiz_pool' => [$validated['quiz_id']], // Convertir en array
             ]);
             
             DB::commit();
